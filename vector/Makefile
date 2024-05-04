@@ -12,7 +12,7 @@ headers:
 	cp -r include $(BUILD)
 
 # Formatting
-FORMAT_FILES=src/vector.h include/vector.h
+FORMAT_FILES=src/vector.c include/vector.h
 
 .PHONY: checkformat
 checkformat:
