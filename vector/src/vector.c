@@ -1,7 +1,7 @@
 /**
  * @file vector.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.0
+ * @version pre1.0
  * @date 2024
  * @license LGPLv3.0
  * @brief Abstract vector.
