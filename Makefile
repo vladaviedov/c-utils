@@ -49,8 +49,9 @@ clean:
 # Test
 export CXX=g++
 export CXXFLAGS=-Wall -Wextra -g -std=c++14 -I ../build/include
-TEST_LDFLAGS=-lgtest -lgtest_main
+TEST_LDFLAGS=-lgtest -lgtest_main -lgcov
 TEST_TARGET=$(BUILD)/test/runtest
+COV_DIR=cov
 
 .PHONY: test
 test: all $(TEST_COMPONENTS)
@@ -61,6 +62,18 @@ test: all $(TEST_COMPONENTS)
 .PHONY: vector_tests
 vector_tests:
 	$(MAKE) -C vector test
+
+.PHONY: coverage
+coverage: CFLAGS += -fprofile-arcs -ftest-coverage
+coverage: 
+	$(MAKE) clean
+	mkdir -p cov
+	$(MAKE) all CFLAGS='$(CFLAGS)'
+	lcov --no-external --capture --initial -d . -o $(COV_DIR)/report_base.info
+	$(MAKE) test
+	lcov --no-external --capture -d $(shell pwd) -o $(COV_DIR)/report_aux.info
+	lcov -a $(COV_DIR)/report_base.info -a $(COV_DIR)/report_aux.info -o $(COV_DIR)/report.info
+	genhtml $(COV_DIR)/report.info -o $(COV_DIR)
 
 # Format
 export FORMAT=clang-format
