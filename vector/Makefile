@@ -11,7 +11,16 @@ $(TARGET): src/vector.c
 headers:
 	cp -r include $(BUILD)
 
-# Formatting
+# Test
+TARGET_TEST=$(BUILD)/obj/vector_tests.o
+
+.PHONY: test
+test: $(TARGET_TEST)
+
+$(TARGET_TEST): test/vector_tests.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Format
 FORMAT_FILES=src/vector.c include/vector.h
 
 .PHONY: checkformat

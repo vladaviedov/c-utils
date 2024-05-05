@@ -7,6 +7,8 @@ BUILD=build
 TARGET=$(BUILD)/lib/libutils.a
 COMPONENTS=
 OBJECTS=
+TEST_COMPONENTS=
+TEST_OBJECTS=
 
 # Configuration
 CONFIG=build.conf
@@ -15,6 +17,8 @@ include $(CONFIG)
 ifeq ($(vector),1)
 COMPONENTS += vector
 OBJECTS += $(BUILD)/obj/vector.o
+TEST_COMPONENTS += vector_tests
+TEST_OBJECTS += $(BUILD)/obj/vector_tests.o
 endif
 
 # Build
@@ -27,6 +31,7 @@ dirs:
 	mkdir -p $(BUILD)/lib
 	mkdir -p $(BUILD)/obj
 	mkdir -p $(BUILD)/include
+	mkdir -p $(BUILD)/test
 
 .PHONY: $(TARGET)
 $(TARGET): $(COMPONENTS)
@@ -40,6 +45,22 @@ vector:
 .PHONY: clean
 clean:
 	rm -rf $(BUILD)
+
+# Test
+export CXX=g++
+export CXXFLAGS=-Wall -Wextra -g -std=c++14 -I ../build/include
+TEST_LDFLAGS=-lgtest -lgtest_main
+TEST_TARGET=$(BUILD)/test/runtest
+
+.PHONY: test
+test: all $(TEST_COMPONENTS)
+	rm -f $(TEST_TARGET)
+	$(CXX) $(TEST_OBJECTS) $(TARGET) $(TEST_LDFLAGS) -o $(TEST_TARGET)
+	$(TEST_TARGET)
+
+.PHONY: vector_tests
+vector_tests:
+	$(MAKE) -C vector test
 
 # Format
 export FORMAT=clang-format
