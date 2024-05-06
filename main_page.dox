@@ -1,0 +1,12 @@
+/**
+ * @mainpage C Language Utilities
+ * 
+ * This project is a C library which contains data structures and other nice
+ * utilities for other projects.
+ *
+ * Components can be exlucluded in the build process using the build
+ * configuration file.
+ *
+ * Components:
+ * - @ref vector.h "Vector"
+ */

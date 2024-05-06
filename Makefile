@@ -87,3 +87,11 @@ checkformat:
 .PHONY: format
 format:
 	$(MAKE) -C vector format
+
+# Documentation
+DOXYGEN=doxygen
+DOXYGEN_CONF=doxygen.conf
+
+.PHONY: docs
+docs:
+	$(DOXYGEN) $(DOXYGEN_CONF)
