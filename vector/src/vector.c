@@ -1,12 +1,12 @@
 /**
  * @file vector.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version pre1.0
+ * @version 1.0
  * @date 2024
  * @license LGPLv3.0
  * @brief Abstract vector.
  */
-#include <vector.h>
+#include "vector.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -82,9 +82,11 @@ vector_status vec_push(vector *vec, const void *value) {
 
 	// New to grow vector
 	if (vec->count == vec->_alloc_count) {
+		// clang-format off
 		uint32_t new_count = (vec->data == NULL)
 			? FACTOR
 			: vec->_alloc_count * FACTOR;
+		// clang-format on
 		vec_reserve(vec, new_count);
 	}
 
@@ -108,9 +110,11 @@ vector_status vec_insert(vector *vec, uint32_t index, const void *value) {
 
 	// New to grow vector
 	if (vec->count == vec->_alloc_count) {
+		// clang-format off
 		uint32_t new_count = (vec->data == NULL)
 			? FACTOR
 			: vec->_alloc_count * FACTOR;
+		// clang-format on
 		vec_reserve(vec, new_count);
 	}
 

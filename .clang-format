@@ -1,5 +1,6 @@
 BasedOnStyle: "LLVM"
 BreakBeforeBinaryOperators: All
+BreakBeforeTernaryOperators: true
 AlignAfterOpenBracket: "DontAlign"
 AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: "Empty"

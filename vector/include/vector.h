@@ -1,7 +1,7 @@
 /**
  * @file vector.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version pre1.0
+ * @version 1.0
  * @date 2024
  * @license LGPLv3.0
  * @brief Abstract vector.
@@ -11,6 +11,23 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/**
+ * @struct vector
+ * Vector object. Fields should not be edited.
+ *
+ * @var vector::data
+ * Raw data array.
+ * @var vector::count
+ * Current element count.
+ *
+ * @internal
+ * @var vector::_type_size
+ * Size of contained type.
+ *
+ * @var vector::_alloc_count
+ * How many elements can fit in data.
+ * @endinternal
+ */
 typedef struct {
 	void *data;
 	uint32_t count;
