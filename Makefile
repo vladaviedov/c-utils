@@ -90,7 +90,7 @@ format:
 
 # Documentation
 DOXYGEN=doxygen
-DOXYGEN_CONF=doxygen.conf
+DOXYGEN_CONF=Doxyfile
 
 .PHONY: docs
 docs:
