@@ -21,7 +21,7 @@ $(TARGET_TEST): test/stack_tests.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Format
-FORMAT_FILES=src/stack.c include/stack.h
+FORMAT_FILES=src/stack.c include/stack.h test/stack_tests.cpp
 
 .PHONY: checkformat
 checkformat:
