@@ -21,6 +21,13 @@ TEST_COMPONENTS += vector_tests
 TEST_OBJECTS += $(BUILD)/obj/vector_tests.o
 endif
 
+ifeq ($(stack),1)
+COMPONENTS += stack
+OBJECTS += $(BUILD)/obj/stack.o
+TEST_COMPONENTS += stack_tests
+TEST_OBJECTS += $(BUILD)/obj/stack_tests.o
+endif
+
 # Build
 .PHONY: all
 all: dirs $(TARGET)
@@ -41,6 +48,10 @@ $(TARGET): $(COMPONENTS)
 .PHONY: vector
 vector:
 	$(MAKE) -C vector
+
+.PHONY: stack
+stack:
+	$(MAKE) -C stack
 
 .PHONY: clean
 clean:
@@ -63,6 +74,10 @@ test: all $(TEST_COMPONENTS)
 vector_tests:
 	$(MAKE) -C vector test
 
+.PHONY: stack_tests
+stack_tests:
+	$(MAKE) -C stack test
+
 .PHONY: coverage
 coverage: CFLAGS += -fprofile-arcs -ftest-coverage
 coverage: 
@@ -83,10 +98,12 @@ export FORMAT_FIX_FLAGS=-i
 .PHONY: checkformat
 checkformat:
 	$(MAKE) -C vector checkformat
+	$(MAKE) -C stack checkformat
 
 .PHONY: format
 format:
 	$(MAKE) -C vector format
+	$(MAKE) -C stack format
 
 # Documentation
 DOXYGEN=doxygen
