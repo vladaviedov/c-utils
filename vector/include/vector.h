@@ -21,11 +21,12 @@
  * Current element count.
  *
  * @internal
+ *
  * @var vector::_type_size
  * Size of contained type.
- *
  * @var vector::_alloc_count
  * How many elements can fit in data.
+ *
  * @endinternal
  */
 typedef struct {
@@ -36,6 +37,19 @@ typedef struct {
 	uint32_t _alloc_count;
 } vector;
 
+/**
+ * @enum vector_status
+ * Result of vector operation.
+ *
+ * @var vector_status::VECTOR_STATUS_OK
+ * Operation completed successfully.
+ * 
+ * @var vector_status::VECTOR_STATUS_NULL
+ * Vector argument is null.
+ *
+ * @var vector_status::VECTOR_STATUS_BOUNDS
+ * Operation was out of bounds.
+ */
 typedef enum {
 	VECTOR_STATUS_OK = 0,
 	VECTOR_STATUS_NULL = 1,
@@ -52,7 +66,7 @@ typedef enum {
 vector vec_init(size_t type_size);
 
 /**
- * @brief Create vector object on the heap
+ * @brief Create vector object on the heap.
  *
  * @param[in] type_size - sizeof result of the desired type.
  * @return Vector object.
