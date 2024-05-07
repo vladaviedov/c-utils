@@ -43,7 +43,7 @@ typedef struct {
  *
  * @var vector_status::VECTOR_STATUS_OK
  * Operation completed successfully.
- * 
+ *
  * @var vector_status::VECTOR_STATUS_NULL
  * Vector argument is null.
  *

@@ -1,5 +1,5 @@
 extern "C" {
-	#include "../../vector/include/vector.h"
+#include "../include/vector.h"
 }
 
 #include <cstdlib>

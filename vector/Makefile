@@ -21,7 +21,7 @@ $(TARGET_TEST): test/vector_tests.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Format
-FORMAT_FILES=src/vector.c include/vector.h
+FORMAT_FILES=src/vector.c include/vector.h test/vector_tests.cpp
 
 .PHONY: checkformat
 checkformat:
