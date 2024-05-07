@@ -11,5 +11,5 @@ ALIASES                = "license=@par License:^^"
 OPTIMIZE_OUTPUT_FOR_C  = YES
 TIMESTAMP              = DATETIME
 INPUT                  = main_page.dox \
-						 vector/src \
-						 vector/include
+                         $(DOC_DIRS)
+FILE_PATTERNS          = *.c *.h

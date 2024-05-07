@@ -5,10 +5,12 @@ ARFLAGS=rsc
 BUILD=build
 
 TARGET=$(BUILD)/lib/libutils.a
+
 COMPONENTS=
 OBJECTS=
 TEST_COMPONENTS=
 TEST_OBJECTS=
+DOC_DIRS=
 
 # Configuration
 CONFIG=build.conf
@@ -19,6 +21,7 @@ COMPONENTS += vector
 OBJECTS += $(BUILD)/obj/vector.o
 TEST_COMPONENTS += vector_tests
 TEST_OBJECTS += $(BUILD)/obj/vector_tests.o
+DOC_DIRS += vector/src vector/include
 endif
 
 ifeq ($(stack),1)
@@ -26,6 +29,7 @@ COMPONENTS += stack
 OBJECTS += $(BUILD)/obj/stack.o
 TEST_COMPONENTS += stack_tests
 TEST_OBJECTS += $(BUILD)/obj/stack_tests.o
+DOC_DIRS += stack/src stack/include
 endif
 
 # Build
@@ -111,4 +115,4 @@ DOXYGEN_CONF=Doxyfile
 
 .PHONY: docs
 docs:
-	$(DOXYGEN) $(DOXYGEN_CONF)
+	DOC_DIRS='$(DOC_DIRS)' $(DOXYGEN) $(DOXYGEN_CONF)
