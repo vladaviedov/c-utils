@@ -41,7 +41,7 @@ dirs:
 	mkdir -p $(BUILD)
 	mkdir -p $(BUILD)/lib
 	mkdir -p $(BUILD)/obj
-	mkdir -p $(BUILD)/include
+	mkdir -p $(BUILD)/include/c-utils
 	mkdir -p $(BUILD)/test
 
 .PHONY: $(TARGET)

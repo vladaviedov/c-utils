@@ -1,3 +1,4 @@
+CFLAGS += -I./include
 BUILD=../build
 TARGET=$(BUILD)/obj/stack.o
 
@@ -9,7 +10,7 @@ $(TARGET): src/stack.c
 
 .PHONY: headers
 headers:
-	cp -r include $(BUILD)
+	cp -r include/** $(BUILD)/include/c-utils
 
 # Test
 TARGET_TEST=$(BUILD)/obj/stack_tests.o

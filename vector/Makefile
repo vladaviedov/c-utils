@@ -1,3 +1,4 @@
+CFLAGS += -I./include
 BUILD=../build
 TARGET=$(BUILD)/obj/vector.o
 
@@ -9,7 +10,7 @@ $(TARGET): src/vector.c
 
 .PHONY: headers
 headers:
-	cp -r include $(BUILD)
+	cp -r include/** $(BUILD)/include/c-utils
 
 # Test
 TARGET_TEST=$(BUILD)/obj/vector_tests.o
