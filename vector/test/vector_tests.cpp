@@ -301,3 +301,59 @@ TEST(Vector, VecAtOk) {
 	EXPECT_EQ(*(char *)vec_at(&vec, 0), element0);
 	EXPECT_EQ(*(char *)vec_at(&vec, 1), element1);
 }
+
+TEST(Vector, VecCollectNull) {
+	vector *vec = nullptr;
+
+	EXPECT_EQ(vec_collect(vec), nullptr);
+}
+
+TEST(Vector, VecCollectOk) {
+	void *memory = malloc(8);
+
+	vector vec = {
+		.data = memory,
+		.count = 0,
+		._type_size = 1,
+		._alloc_count = 8,
+	};
+
+	EXPECT_EQ(vec_collect(&vec), memory);
+	EXPECT_EQ(vec.data, nullptr);
+	EXPECT_EQ(vec._alloc_count, 0);
+
+	free(memory);
+}
+
+TEST(Vector, FullTest) {
+	vector *vec = vec_new(sizeof(char));
+
+	EXPECT_EQ(vec_push(vec, &element0), VECTOR_STATUS_OK);
+	EXPECT_EQ(vec_push(vec, &element1), VECTOR_STATUS_OK);
+	EXPECT_EQ(vec_push(vec, &element2), VECTOR_STATUS_OK);
+
+	EXPECT_EQ(*(char *)vec_at(vec, 0), element0);
+	EXPECT_EQ(*(char *)vec_at(vec, 1), element1);
+	EXPECT_EQ(*(char *)vec_at(vec, 2), element2);
+
+	char buffer = 123;
+
+	EXPECT_EQ(vec_erase(vec, 1, &buffer), VECTOR_STATUS_OK);
+	EXPECT_EQ(buffer, element1);
+	EXPECT_EQ(vec_insert(vec, 1, &buffer), VECTOR_STATUS_OK);
+
+	EXPECT_EQ(*(char *)vec_at(vec, 0), element0);
+	EXPECT_EQ(*(char *)vec_at(vec, 1), element1);
+	EXPECT_EQ(*(char *)vec_at(vec, 2), element2);
+
+	char *inner_data = (char *)vec_collect(vec);
+	EXPECT_NE(inner_data, nullptr);
+
+	EXPECT_EQ(vec_delete(vec), VECTOR_STATUS_OK);
+
+	EXPECT_EQ(inner_data[0], element0);
+	EXPECT_EQ(inner_data[1], element1);
+	EXPECT_EQ(inner_data[2], element2);
+
+	free(inner_data);
+}

@@ -1,7 +1,7 @@
 /**
  * @file vector.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.0
+ * @version 1.1
  * @date 2024
  * @license LGPLv3.0
  * @brief Abstract vector.
@@ -146,3 +146,12 @@ const void *vec_at(const vector *vec, uint32_t index);
  * @return Pointer to element (mutable).
  */
 void *vec_at_mut(const vector *vec, uint32_t index);
+
+/**
+ * @brief Collect vector data array, resetting the vector.
+ *
+ * @param[in] vec - Vector object.
+ * @return Data array.
+ * @note User is responsible for freeing the memory.
+ */
+void *vec_collect(vector *vec);

@@ -1,7 +1,7 @@
 /**
  * @file vector.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.0
+ * @version 1.1
  * @date 2024
  * @license LGPLv3.0
  * @brief Abstract vector.
@@ -163,4 +163,18 @@ void *vec_at_mut(const vector *vec, uint32_t index) {
 	}
 
 	return ptr_at(vec, index);
+}
+
+void *vec_collect(vector *vec) {
+	if (vec == NULL) {
+		return NULL;
+	}
+
+	void *retrieved = vec->data;
+
+	vec->data = NULL;
+	vec->count = 0;
+	vec->_alloc_count = 0;
+
+	return retrieved;
 }
