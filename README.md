@@ -5,7 +5,7 @@ Library providing utils for the C language for other projects.
 ## Dependencies
 
 - Build: C tool chain
-- Testing: `gtest`
+- Testing: `gtest`, C++ tool chain
 - Coverage: `lcov`
 - Documentation: `doxygen`
 
