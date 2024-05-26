@@ -32,6 +32,14 @@ TEST_OBJECTS += $(BUILD)/obj/stack_tests.o
 DOC_DIRS += stack/src stack/include
 endif
 
+ifeq ($(nanorl),1)
+COMPONENTS += nanorl
+OBJECTS += $(BUILD)/obj/nanorl.o
+TEST_COMPONENTS += nanorl_tests
+TEST_OBJECTS += $(BUILD)/obj/nanorl_tests.o
+DOC_DIRS += nanorl/src nanorl/include
+endif
+
 # Build
 .PHONY: all
 all: dirs $(TARGET)
@@ -56,6 +64,10 @@ vector:
 .PHONY: stack
 stack:
 	$(MAKE) -C stack
+
+.PHONY: nanorl
+nanorl:
+	$(MAKE) -C nanorl
 
 .PHONY: clean
 clean:
@@ -82,6 +94,10 @@ vector_tests:
 stack_tests:
 	$(MAKE) -C stack test
 
+.PHONY: nanorl_tests
+nanorl_tests:
+	$(MAKE) -C nanorl test
+
 .PHONY: coverage
 coverage: CFLAGS += -fprofile-arcs -ftest-coverage
 coverage: 
@@ -103,11 +119,13 @@ export FORMAT_FIX_FLAGS=-i
 checkformat:
 	$(MAKE) -C vector checkformat
 	$(MAKE) -C stack checkformat
+	$(MAKE) -C nanorl checkformat
 
 .PHONY: format
 format:
 	$(MAKE) -C vector format
 	$(MAKE) -C stack format
+	$(MAKE) -C nanorl format
 
 # Documentation
 DOXYGEN=doxygen
