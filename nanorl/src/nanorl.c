@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <errno.h>
 #include <termios.h>
 #include <unistd.h>
 #include <signal.h>
@@ -16,6 +17,10 @@
 	if (var_ptr != NULL) { \
 		*var_ptr = val; \
 	}
+
+static int recvd_signal;
+
+static void sig_handler(int code);
 
 char *nanorl(const char *prompt, nrl_error *err) {
 	return nanorl_fd(STDIN_FILENO, prompt, err);
@@ -60,7 +65,7 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 
 	struct sigaction new_sa;
 	sigemptyset(&new_sa.sa_mask);
-	new_sa.sa_handler = NULL;
+	new_sa.sa_handler = &sig_handler;
 
 	if (sigaction(SIGINT, &new_sa, &old_sigint_sa) < 0
 		|| sigaction(SIGTERM, &new_sa, &old_sigterm_sa) < 0
@@ -77,8 +82,10 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 	char *input_buf = malloc(sizeof(char) * 1024);
 	uint32_t alloc_length = 1024;
 	uint32_t input_length = 0;
+
+	ssize_t res;
 	char input_ch;
-	while (read(options->fd, &input_ch, sizeof(char)) > 0 && input_ch != '\n') {
+	while ((res = read(options->fd, &input_ch, sizeof(char))) > 0 && input_ch != '\n') {
 		if (input_length == alloc_length) {
 			input_buf = realloc(input_buf, alloc_length * FACTOR);
 		}
@@ -113,6 +120,11 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 		return NULL;
 	}
 
+	// Resend signal to user
+	if (res < 0 && errno == EINTR) {
+		raise(recvd_signal);
+	}
+
 	// Exit
 	if (input_length == 0) {
 		safe_assign(err, NRL_EMPTY);
@@ -122,4 +134,8 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 
 	safe_assign(err, NRL_OK);
 	return input_buf;
+}
+
+static void sig_handler(int code) {
+	recvd_signal = code;
 }
