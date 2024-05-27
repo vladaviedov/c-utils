@@ -21,26 +21,33 @@ char *nanorl(const char *prompt, nrl_error *err) {
 	return nanorl_fd(STDIN_FILENO, prompt, err);
 }
 
-char *nanorl_file(FILE *source, const char *prompt, nrl_error *err) {
-	return nanorl_fd(fileno(source), prompt, err);
+char *nanorl_fd(int fd, const char *prompt, nrl_error *err) {
+	nrl_opts options = {
+		.fd = fd,
+		.prompt = prompt,
+		.echo = NRL_ECHO,
+		.echo_repl = '\0',
+	};
+
+	return nanorl_adv(&options, err);
 }
 
-char *nanorl_fd(int fd, const char *prompt, nrl_error *err) {
-	if (fd < 0) {
+char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
+	if (options->fd < 0) {
 		safe_assign(err, NRL_BAD_FD);
 		return NULL;
 	}
 	
 	// Setup terminal options
 	struct termios old_attr;
-	if (tcgetattr(fd, &old_attr) < 0) {
+	if (tcgetattr(options->fd, &old_attr) < 0) {
 		safe_assign(err, NRL_SYS_ERR);
 		return NULL;
 	}
 
 	struct termios new_attr = old_attr;
 	new_attr.c_lflag &= ~(ICANON | ECHO);
-	if (tcsetattr(fd, TCSAFLUSH, &new_attr) < 0) {
+	if (tcsetattr(options->fd, TCSAFLUSH, &new_attr) < 0) {
 		safe_assign(err, NRL_SYS_ERR);
 		return NULL;
 	}
@@ -63,7 +70,7 @@ char *nanorl_fd(int fd, const char *prompt, nrl_error *err) {
 	}
 
 	// Print prompt:
-	write(fd, prompt, strlen(prompt) + 1);
+	write(options->fd, options->prompt, strlen(options->prompt) + 1);
 
 	// Input processing
 	// TODO: handle non-alpha
@@ -71,14 +78,24 @@ char *nanorl_fd(int fd, const char *prompt, nrl_error *err) {
 	uint32_t alloc_length = 1024;
 	uint32_t input_length = 0;
 	char input_ch;
-	while (read(fd, &input_ch, sizeof(char)) > 0 && input_ch != '\n') {
+	while (read(options->fd, &input_ch, sizeof(char)) > 0 && input_ch != '\n') {
 		if (input_length == alloc_length) {
 			input_buf = realloc(input_buf, alloc_length * FACTOR);
 		}
 
 		input_buf[input_length] = input_ch;
 		input_length++;
-		write(fd, &input_ch, 1);
+
+		switch (options->echo) {
+		case NRL_NO_ECHO:
+			break;
+		case NRL_ECHO:
+			write(options->fd, &input_ch, 1);
+			break;
+		case NRL_FAKE_ECHO:
+			write(options->fd, &options->echo_repl, 1);
+			break;
+		}
 	}
 
 	// Reset terminal settings
@@ -90,7 +107,7 @@ char *nanorl_fd(int fd, const char *prompt, nrl_error *err) {
 		return NULL;
 	}
 
-	if (tcsetattr(fd, TCSAFLUSH, &old_attr) < 0) {
+	if (tcsetattr(options->fd, TCSAFLUSH, &old_attr) < 0) {
 		safe_assign(err, NRL_SYS_ERR);
 		free(input_buf);
 		return NULL;
