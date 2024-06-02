@@ -25,6 +25,8 @@ static const char backspace = '\b';
 
 static int recvd_signal;
 static void sig_handler(int code);
+static void shift_arr(char *array, uint32_t length, uint32_t index);
+static void unshift_arr(char *array, uint32_t length, uint32_t index);
 
 char *nanorl(const char *prompt, nrl_error *err) {
 	return nanorl_fd(STDIN_FILENO, prompt, err);
@@ -108,33 +110,55 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 			continue;
 		}
 
-		// Backspace input
-		if (input_buf[0] == nrl_lookup_seq(NRL_TI_BACKSPACE)[0]) {
-			line_cursor--;
-			input_length--;
-			write(options->fd, &backspace, sizeof(char));
-			continue;
+		int is_backspace = (input_buf[0] == nrl_lookup_seq(NRL_TI_BACKSPACE)[0]);
+		if (is_backspace) {
+			// Backspace input
+			// Not work
+			if (line_cursor == 0) {
+				continue;
+			}
+			unshift_arr(line_buf, input_length, line_cursor - 1);
+			line_buf[input_length] = ' ';
+		} else {
+			// Standard inputs
+			if (input_length == alloc_length - 1) {
+				line_buf = realloc(line_buf, alloc_length * FACTOR);
+			}
+
+			if (line_cursor != input_length) {
+				shift_arr(line_buf, input_length, line_cursor);
+			}
+			line_buf[line_cursor] = input_buf[0];
+			input_length++;
+			line_cursor++;
 		}
 
-		// Standard inputs
-		// TODO: insert at cursor
-		if (input_length == alloc_length - 1) {
-			line_buf = realloc(line_buf, alloc_length * FACTOR);
-		}
-
-		line_buf[input_length] = input_buf[0];
-		input_length++;
-		line_cursor++;
-
+		// Redraw
+		char *redraw_start = line_buf + (line_cursor - 1);
+		uint32_t redraw_length = input_length - (line_cursor - 1);
 		switch (options->echo) {
 		case NRL_NO_ECHO:
 			break;
 		case NRL_ECHO:
-			write(options->fd, input_buf, sizeof(char));
+			write(options->fd, redraw_start, redraw_length * sizeof(char));
+			for (uint32_t i = 1; i < redraw_length; i++) {
+				write(options->fd, &backspace, sizeof(char));
+			}
 			break;
 		case NRL_FAKE_ECHO:
-			write(options->fd, &options->echo_repl, sizeof(char));
+			for (uint32_t i = 0; i < redraw_length; i++) {
+				write(options->fd, &options->echo_repl, sizeof(char));
+			}
+			for (uint32_t i = 1; i < redraw_length; i++) {
+				write(options->fd, &backspace, sizeof(char));
+			}
 			break;
+		}
+
+		// Not work
+		if (is_backspace) {
+			input_length--;
+			line_cursor--;
 		}
 	}
 
@@ -175,4 +199,16 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 
 static void sig_handler(int code) {
 	recvd_signal = code;
+}
+
+static void shift_arr(char *array, uint32_t length, uint32_t index) {
+	for (uint32_t i = length; i > index; i--) {
+		array[i] = array[i - 1];
+	}
+}
+
+static void unshift_arr(char *array, uint32_t length, uint32_t index) {
+	for (uint32_t i = index; i < length; i++) {
+		array[i] = array[i + 1];
+	}
 }
