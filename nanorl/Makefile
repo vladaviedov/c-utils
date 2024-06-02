@@ -1,11 +1,14 @@
 CFLAGS += -I./include
 BUILD=../build
-TARGET=$(BUILD)/obj/nanorl.o
+TARGETS=$(BUILD)/obj/nanorl.o $(BUILD)/obj/terminfo.o
 
 .PHONY: all
-all: headers $(TARGET)
+all: headers $(TARGETS)
 
-$(TARGET): src/nanorl.c
+$(BUILD)/obj/nanorl.o: src/nanorl.c src/terminfo.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/obj/terminfo.o: src/terminfo.c src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: headers

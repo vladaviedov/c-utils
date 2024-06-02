@@ -34,7 +34,7 @@ endif
 
 ifeq ($(nanorl),1)
 COMPONENTS += nanorl
-OBJECTS += $(BUILD)/obj/nanorl.o
+OBJECTS += $(BUILD)/obj/nanorl.o $(BUILD)/obj/terminfo.o
 TEST_COMPONENTS += nanorl_tests
 TEST_OBJECTS += $(BUILD)/obj/nanorl_tests.o
 DOC_DIRS += nanorl/src nanorl/include

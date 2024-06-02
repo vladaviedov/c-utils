@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include "terminfo.h"
+
 #define START_ALLOC 1024
 #define FACTOR 2
 
@@ -18,8 +20,10 @@
 		*var_ptr = val; \
 	}
 
-static int recvd_signal;
+static const char newline = '\n';
+static const char backspace = '\b';
 
+static int recvd_signal;
 static void sig_handler(int code);
 
 char *nanorl(const char *prompt, nrl_error *err) {
@@ -78,29 +82,58 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 	write(options->fd, options->prompt, strlen(options->prompt) + 1);
 
 	// Input processing
-	// TODO: handle non-alpha
-	char *input_buf = malloc(sizeof(char) * 1024);
+	char *line_buf = malloc(sizeof(char) * 1024);
 	uint32_t alloc_length = 1024;
 	uint32_t input_length = 0;
+	uint32_t line_cursor = 0;
 
 	ssize_t res;
-	char input_ch;
-	while ((res = read(options->fd, &input_ch, sizeof(char))) > 0 && input_ch != '\n') {
-		if (input_length == alloc_length) {
-			input_buf = realloc(input_buf, alloc_length * FACTOR);
+	char input_buf[4];
+	while ((res = read(options->fd, input_buf, sizeof(char) * 4)) > 0 && input_buf[0] != '\n') {
+		// Special inputs
+		if (res > 1) {
+			if (strncmp(input_buf, nrl_lookup_seq(NRL_TI_LEFT), res) == 0) {
+				if (line_cursor > 0) {
+					line_cursor--;
+					write(options->fd, input_buf, res);
+				}
+			}
+			if (strncmp(input_buf, nrl_lookup_seq(NRL_TI_RIGHT), res) == 0) {
+				if (line_cursor < input_length) {
+					line_cursor++;
+					write(options->fd, input_buf, res);
+				}
+			}
+
+			continue;
 		}
 
-		input_buf[input_length] = input_ch;
+		// Backspace input
+		if (input_buf[0] == nrl_lookup_seq(NRL_TI_BACKSPACE)[0]) {
+			line_cursor--;
+			input_length--;
+			write(options->fd, &backspace, sizeof(char));
+			continue;
+		}
+
+		// Standard inputs
+		// TODO: insert at cursor
+		if (input_length == alloc_length - 1) {
+			line_buf = realloc(line_buf, alloc_length * FACTOR);
+		}
+
+		line_buf[input_length] = input_buf[0];
 		input_length++;
+		line_cursor++;
 
 		switch (options->echo) {
 		case NRL_NO_ECHO:
 			break;
 		case NRL_ECHO:
-			write(options->fd, &input_ch, 1);
+			write(options->fd, input_buf, sizeof(char));
 			break;
 		case NRL_FAKE_ECHO:
-			write(options->fd, &options->echo_repl, 1);
+			write(options->fd, &options->echo_repl, sizeof(char));
 			break;
 		}
 	}
@@ -110,15 +143,19 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 		|| sigaction(SIGTERM, &old_sigterm_sa, NULL) < 0
 		|| sigaction(SIGQUIT, &old_sigquit_sa, NULL) < 0) {
 		safe_assign(err, NRL_SYS_ERR);
-		free(input_buf);
+		free(line_buf);
 		return NULL;
 	}
 
 	if (tcsetattr(options->fd, TCSAFLUSH, &old_attr) < 0) {
 		safe_assign(err, NRL_SYS_ERR);
-		free(input_buf);
+		free(line_buf);
 		return NULL;
 	}
+
+	// Write newline
+	write(options->fd, &newline, sizeof(char));
+	line_buf[input_length] = '\0';
 
 	// Resend signal to user
 	if (res < 0 && errno == EINTR) {
@@ -128,12 +165,12 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 	// Exit
 	if (input_length == 0) {
 		safe_assign(err, NRL_EMPTY);
-		free(input_buf);
+		free(line_buf);
 		return NULL;
 	}
 
 	safe_assign(err, NRL_OK);
-	return input_buf;
+	return line_buf;
 }
 
 static void sig_handler(int code) {
