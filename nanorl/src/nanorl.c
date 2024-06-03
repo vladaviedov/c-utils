@@ -113,12 +113,13 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 		int is_backspace = (input_buf[0] == nrl_lookup_seq(NRL_TI_BACKSPACE)[0]);
 		if (is_backspace) {
 			// Backspace input
-			// Not work
 			if (line_cursor == 0) {
 				continue;
 			}
+
 			unshift_arr(line_buf, input_length, line_cursor - 1);
-			line_buf[input_length] = ' ';
+			line_buf[input_length - 1] = ' ';
+			write(options->fd, &backspace, sizeof(char));
 		} else {
 			// Standard inputs
 			if (input_length == alloc_length - 1) {
@@ -159,6 +160,7 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 		if (is_backspace) {
 			input_length--;
 			line_cursor--;
+			write(options->fd, &backspace, sizeof(char));
 		}
 	}
 
