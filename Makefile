@@ -1,7 +1,7 @@
 export CC=gcc
 export CFLAGS=-Wall -Wextra -g -std=c99 -I ../build/include
-AR=ar
-ARFLAGS=rsc
+export AR=ar
+export ARFLAGS=rvsc
 BUILD=build
 
 TARGET=$(BUILD)/lib/libutils.a
@@ -12,29 +12,44 @@ TEST_COMPONENTS=
 TEST_OBJECTS=
 DOC_DIRS=
 
+.PHONY: all
+all: dirs $(TARGET)
+
+# make_sublib(target_name)
+define make_sublib
+OBJECTS += $(BUILD)/lib/$(1).a
+DOC_DIRS += $(1)/src $(1)/include
+
+.PHONY: $(1)
+$(BUILD)/lib/$(1).a:
+	$(MAKE) -C $(1) \
+		LIB_TARGET=../$(BUILD)/lib/$(1).a
+endef
+
+# make_sublib_test(target_name)
+define make_sublib_test
+TEST_COMPONENTS += $(1)_tests
+TEST_OBJECTS += $(BUILD)/obj/$(1)_tests.o
+
+.PHONY: $(1)_tests
+$(1)_tests:
+	$(MAKE) -C $(1) test \
+		TEST_TARGET=../$(BUILD)/obj/$(1)_tests.o
+endef
+
 # Configuration
-CONFIG=build.conf
-include $(CONFIG)
+CONFIG_PATH=build.conf
+include $(CONFIG_PATH)
 
 ifeq ($(vector),1)
-COMPONENTS += vector
-OBJECTS += $(BUILD)/obj/vector.o
-TEST_COMPONENTS += vector_tests
-TEST_OBJECTS += $(BUILD)/obj/vector_tests.o
-DOC_DIRS += vector/src vector/include
+$(eval $(call make_sublib,vector))
+$(eval $(call make_sublib_test,vector))
 endif
 
 ifeq ($(stack),1)
-COMPONENTS += stack
-OBJECTS += $(BUILD)/obj/stack.o
-TEST_COMPONENTS += stack_tests
-TEST_OBJECTS += $(BUILD)/obj/stack_tests.o
-DOC_DIRS += stack/src stack/include
+$(eval $(call make_sublib,stack))
+$(eval $(call make_sublib_test,stack))
 endif
-
-# Build
-.PHONY: all
-all: dirs $(TARGET)
 
 .PHONY: dirs
 dirs:
@@ -45,17 +60,9 @@ dirs:
 	mkdir -p $(BUILD)/test
 
 .PHONY: $(TARGET)
-$(TARGET): $(COMPONENTS)
+$(TARGET): $(OBJECTS)
 	rm -f $(TARGET)
-	$(AR) $(ARFLAGS) $@ $(OBJECTS)
-
-.PHONY: vector
-vector:
-	$(MAKE) -C vector
-
-.PHONY: stack
-stack:
-	$(MAKE) -C stack
+	./repack.sh $@ $^
 
 .PHONY: clean
 clean:
@@ -73,14 +80,6 @@ test: all $(TEST_COMPONENTS)
 	rm -f $(TEST_TARGET)
 	$(CXX) $(TEST_OBJECTS) $(TARGET) $(TEST_LDFLAGS) -o $(TEST_TARGET)
 	$(TEST_TARGET)
-
-.PHONY: vector_tests
-vector_tests:
-	$(MAKE) -C vector test
-
-.PHONY: stack_tests
-stack_tests:
-	$(MAKE) -C stack test
 
 .PHONY: coverage
 coverage: CFLAGS += -fprofile-arcs -ftest-coverage

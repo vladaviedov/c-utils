@@ -1,11 +1,13 @@
 CFLAGS += -I./include
 BUILD=../build
-TARGET=$(BUILD)/obj/vector.o
 
 .PHONY: all
-all: headers $(TARGET)
+all: headers $(LIB_TARGET)
 
-$(TARGET): src/vector.c
+$(LIB_TARGET): $(BUILD)/obj/vector.o
+	$(AR) $(ARFLAGS) $@ $^
+
+$(BUILD)/obj/vector.o: src/vector.c include/vector.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: headers
@@ -13,12 +15,10 @@ headers:
 	cp -r include/** $(BUILD)/include/c-utils
 
 # Test
-TARGET_TEST=$(BUILD)/obj/vector_tests.o
-
 .PHONY: test
-test: $(TARGET_TEST)
+test: $(TEST_TARGET)
 
-$(TARGET_TEST): test/vector_tests.cpp
+$(TEST_TARGET): test/vector_tests.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Format
