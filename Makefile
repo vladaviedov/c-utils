@@ -51,6 +51,7 @@ $(eval $(call make_sublib,stack))
 $(eval $(call make_sublib_test,stack))
 endif
 
+# Build
 .PHONY: dirs
 dirs:
 	mkdir -p $(BUILD)
@@ -97,16 +98,21 @@ coverage:
 export FORMAT=clang-format
 export FORMAT_CHECK_FLAGS=--dry-run --Werror
 export FORMAT_FIX_FLAGS=-i
+FORMAT_DIRS=\
+	vector \
+	stack
 
 .PHONY: checkformat
 checkformat:
-	$(MAKE) -C vector checkformat
-	$(MAKE) -C stack checkformat
+	for dir in $(FORMAT_DIRS); do \
+		$(MAKE) -C $$dir checkformat; \
+	done
 
 .PHONY: format
 format:
-	$(MAKE) -C vector format
-	$(MAKE) -C stack format
+	for dir in $(FORMAT_DIRS); do \
+		$(MAKE) -C $$dir format; \
+	done
 
 # Documentation
 DOXYGEN=doxygen
