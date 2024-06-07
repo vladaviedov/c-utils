@@ -44,6 +44,10 @@ char *nanorl_fd(int fd, const char *prompt, nrl_error *err) {
 }
 
 char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
+	if (!nrl_load_terminfo()) {
+		return NULL;
+	}
+
 	if (options->fd < 0) {
 		safe_assign(err, NRL_BAD_FD);
 		return NULL;
