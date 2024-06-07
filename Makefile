@@ -1,7 +1,7 @@
 export CC=gcc
 export CFLAGS=-Wall -Wextra -g -std=c99 -I ../build/include
-AR=ar
-ARFLAGS=rsc
+export AR=ar
+export ARFLAGS=rvsc
 BUILD=build
 
 TARGET=$(BUILD)/lib/libutils.a
@@ -12,38 +12,51 @@ TEST_COMPONENTS=
 TEST_OBJECTS=
 DOC_DIRS=
 
-# Configuration
-CONFIG=build.conf
-include $(CONFIG)
-
-ifeq ($(vector),1)
-COMPONENTS += vector
-OBJECTS += $(BUILD)/obj/vector.o
-TEST_COMPONENTS += vector_tests
-TEST_OBJECTS += $(BUILD)/obj/vector_tests.o
-DOC_DIRS += vector/src vector/include
-endif
-
-ifeq ($(stack),1)
-COMPONENTS += stack
-OBJECTS += $(BUILD)/obj/stack.o
-TEST_COMPONENTS += stack_tests
-TEST_OBJECTS += $(BUILD)/obj/stack_tests.o
-DOC_DIRS += stack/src stack/include
-endif
-
-ifeq ($(nanorl),1)
-COMPONENTS += nanorl
-OBJECTS += $(BUILD)/obj/nanorl.o $(BUILD)/obj/terminfo.o
-TEST_COMPONENTS += nanorl_tests
-TEST_OBJECTS += $(BUILD)/obj/nanorl_tests.o
-DOC_DIRS += nanorl/src nanorl/include
-endif
-
-# Build
 .PHONY: all
 all: dirs $(TARGET)
 
+# make_sublib(target_name)
+define make_sublib
+OBJECTS += $(BUILD)/lib/$(1).a
+DOC_DIRS += $(1)/src $(1)/include
+
+.PHONY: $(1)
+$(BUILD)/lib/$(1).a:
+	$(MAKE) -C $(1) \
+		LIB_TARGET=../$(BUILD)/lib/$(1).a
+endef
+
+# make_sublib_test(target_name)
+define make_sublib_test
+TEST_COMPONENTS += $(1)_tests
+TEST_OBJECTS += $(BUILD)/obj/$(1)_tests.o
+
+.PHONY: $(1)_tests
+$(1)_tests:
+	$(MAKE) -C $(1) test \
+		TEST_TARGET=../$(BUILD)/obj/$(1)_tests.o
+endef
+
+# Configuration
+CONFIG_PATH=build.conf
+include $(CONFIG_PATH)
+
+ifeq ($(vector),1)
+$(eval $(call make_sublib,vector))
+$(eval $(call make_sublib_test,vector))
+endif
+
+ifeq ($(stack),1)
+$(eval $(call make_sublib,stack))
+$(eval $(call make_sublib_test,stack))
+endif
+
+ifeq ($(nanorl),1)
+$(eval $(call make_sublib,nanorl))
+$(eval $(call make_sublib_test,nanorl))
+endif
+
+# Build
 .PHONY: dirs
 dirs:
 	mkdir -p $(BUILD)
@@ -53,21 +66,9 @@ dirs:
 	mkdir -p $(BUILD)/test
 
 .PHONY: $(TARGET)
-$(TARGET): $(COMPONENTS)
+$(TARGET): $(OBJECTS)
 	rm -f $(TARGET)
-	$(AR) $(ARFLAGS) $@ $(OBJECTS)
-
-.PHONY: vector
-vector:
-	$(MAKE) -C vector
-
-.PHONY: stack
-stack:
-	$(MAKE) -C stack
-
-.PHONY: nanorl
-nanorl:
-	$(MAKE) -C nanorl
+	./repack.sh $@ $^
 
 .PHONY: clean
 clean:
@@ -86,18 +87,6 @@ test: all $(TEST_COMPONENTS)
 	$(CXX) $(TEST_OBJECTS) $(TARGET) $(TEST_LDFLAGS) -o $(TEST_TARGET)
 	$(TEST_TARGET)
 
-.PHONY: vector_tests
-vector_tests:
-	$(MAKE) -C vector test
-
-.PHONY: stack_tests
-stack_tests:
-	$(MAKE) -C stack test
-
-.PHONY: nanorl_tests
-nanorl_tests:
-	$(MAKE) -C nanorl test
-
 .PHONY: coverage
 coverage: CFLAGS += -fprofile-arcs -ftest-coverage
 coverage: 
@@ -114,18 +103,22 @@ coverage:
 export FORMAT=clang-format
 export FORMAT_CHECK_FLAGS=--dry-run --Werror
 export FORMAT_FIX_FLAGS=-i
+FORMAT_DIRS=\
+	vector \
+	stack \
+	nanorl
 
 .PHONY: checkformat
 checkformat:
-	$(MAKE) -C vector checkformat
-	$(MAKE) -C stack checkformat
-	$(MAKE) -C nanorl checkformat
+	for dir in $(FORMAT_DIRS); do \
+		$(MAKE) -C $$dir checkformat; \
+	done
 
 .PHONY: format
 format:
-	$(MAKE) -C vector format
-	$(MAKE) -C stack format
-	$(MAKE) -C nanorl format
+	for dir in $(FORMAT_DIRS); do \
+		$(MAKE) -C $$dir format; \
+	done
 
 # Documentation
 DOXYGEN=doxygen

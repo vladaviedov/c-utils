@@ -1,9 +1,11 @@
 CFLAGS += -I./include
 BUILD=../build
-TARGETS=$(BUILD)/obj/nanorl.o $(BUILD)/obj/terminfo.o
 
 .PHONY: all
-all: headers $(TARGETS)
+all: headers $(LIB_TARGET)
+
+$(LIB_TARGET): $(BUILD)/obj/nanorl.o $(BUILD)/obj/terminfo.o
+	$(AR) $(ARFLAGS) $@ $^
 
 $(BUILD)/obj/nanorl.o: src/nanorl.c src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -16,8 +18,6 @@ headers:
 	cp -r include/** $(BUILD)/include/c-utils
 
 # Test
-TARGET_TEST=$(BUILD)/obj/nanorl_tests.o
-
 .PHONY: test
 test: $(TARGET_TEST)
 
