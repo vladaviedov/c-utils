@@ -1,4 +1,4 @@
-#define _POSIX_C_SOURCE 200112L
+#define _POSIX_C_SOURCE 200809L
 #include "terminfo.h"
 
 #include <stdio.h>
@@ -51,7 +51,7 @@ static FILE *find_terminfo(const char *term) {
 	// Search for the terminfo file
 	FILE *terminfo = NULL;
 
-	// Preset $TERMINFO by console
+	// Check $TERMINFO
 	const char *ti_env = getenv("TERMINFO");
 	if (ti_env != NULL) {
 		terminfo = try_open(getenv("TERMINFO"), term);
@@ -73,6 +73,25 @@ static FILE *find_terminfo(const char *term) {
 		if (terminfo != NULL) {
 			return terminfo;
 		}
+	}
+
+	// Check $TERMINFO_DIRS
+	char *dirs = getenv("TERMINFO_DIRS");
+	if (dirs != NULL) {
+		char *dirs_copy = strdup(dirs);
+
+		char *dir = strtok(dirs_copy, ":");
+		while (dir != NULL) {
+			terminfo = try_open(dir, term);
+			if (terminfo != NULL) {
+				free(dirs_copy);
+				return terminfo;
+			}
+
+			dir = strtok(NULL, ":");
+		}
+
+		free(dirs_copy);
 	}
 
 	// Other common locations
