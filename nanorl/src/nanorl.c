@@ -106,12 +106,21 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 					line_cursor--;
 					esc_write(options->fd, TI_CURSOR_LEFT);
 				}
-			}
-			if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_RIGHT), res) == 0) {
+			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_RIGHT), res) == 0) {
 				if (line_cursor < input_length) {
 					line_cursor++;
 					esc_write(options->fd, TI_CURSOR_RIGHT);
 				}
+			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_HOME), res) == 0) {
+				for (uint32_t i = line_cursor; i > 0; i--) {
+					esc_write(options->fd, TI_CURSOR_LEFT);
+				}
+				line_cursor = 0;
+			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_END), res) == 0) {
+				for (uint32_t i = line_cursor; i < input_length; i++) {
+					esc_write(options->fd, TI_CURSOR_RIGHT);
+				}
+				line_cursor = input_length;
 			}
 
 			continue;
