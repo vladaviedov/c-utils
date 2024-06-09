@@ -19,6 +19,7 @@
 #include <signal.h>
 
 #include "terminfo.h"
+#include "printer.h"
 
 #define START_ALLOC 1024
 #define FACTOR 2
@@ -31,7 +32,6 @@
 static int recvd_signal;
 static void sig_handler(int code);
 
-static ssize_t esc_write(int fd, terminfo_entry sequence);
 static void shift_str(char *array, uint32_t length, uint32_t index);
 static void unshift_str(char *array, uint32_t length, uint32_t index);
 
@@ -59,6 +59,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		safe_assign(err, NRL_ERR_BAD_FD);
 		return NULL;
 	}
+	nrl_set_fd(options->fd);
 
 	// Setup terminal options
 	struct termios old_attr;
@@ -93,10 +94,11 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 	// Put terminal into application mode
 	// See: https://invisible-island.net/xterm/xterm.faq.html#xterm_arrows
-	esc_write(options->fd, TI_KEYPAD_XMIT);
+	nrl_write_esc(TI_KEYPAD_XMIT);
 	
 	// Print prompt:
-	write(options->fd, options->prompt, strlen(options->prompt));
+	nrl_write(options->prompt, strlen(options->prompt));
+	nrl_flush();
 
 	// Input processing
 	char *line_buf = malloc(sizeof(char) * 1024);
@@ -112,21 +114,21 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 			if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_LEFT), res) == 0) {
 				if (line_cursor > 0) {
 					line_cursor--;
-					esc_write(options->fd, TI_CURSOR_LEFT);
+					nrl_write_esc(TI_CURSOR_LEFT);
 				}
 			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_RIGHT), res) == 0) {
 				if (line_cursor < input_length) {
 					line_cursor++;
-					esc_write(options->fd, TI_CURSOR_RIGHT);
+					nrl_write_esc(TI_CURSOR_RIGHT);
 				}
 			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_HOME), res) == 0) {
 				for (uint32_t i = line_cursor; i > 0; i--) {
-					esc_write(options->fd, TI_CURSOR_LEFT);
+					nrl_write_esc(TI_CURSOR_LEFT);
 				}
 				line_cursor = 0;
 			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_END), res) == 0) {
 				for (uint32_t i = line_cursor; i < input_length; i++) {
-					esc_write(options->fd, TI_CURSOR_RIGHT);
+					nrl_write_esc(TI_CURSOR_RIGHT);
 				}
 				line_cursor = input_length;
 			}
@@ -143,7 +145,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 			unshift_str(line_buf, input_length, line_cursor - 1);
 			line_buf[input_length - 1] = ' ';
-			esc_write(options->fd, TI_CURSOR_LEFT);
+			nrl_write_esc(TI_CURSOR_LEFT);
 		} else {
 			// Standard inputs
 			if (input_length == alloc_length - 1) {
@@ -165,17 +167,17 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		case NRL_ECHO_NO:
 			break;
 		case NRL_ECHO_YES:
-			write(options->fd, redraw_start, redraw_length * sizeof(char));
+			nrl_write(redraw_start, redraw_length * sizeof(char));
 			for (uint32_t i = 1; i < redraw_length; i++) {
-				esc_write(options->fd, TI_CURSOR_LEFT);
+				nrl_write_esc(TI_CURSOR_LEFT);
 			}
 			break;
 		case NRL_ECHO_FAKE:
 			for (uint32_t i = 0; i < redraw_length; i++) {
-				write(options->fd, &options->echo_repl, sizeof(char));
+				nrl_write(&options->echo_repl, sizeof(char));
 			}
 			for (uint32_t i = 1; i < redraw_length; i++) {
-				esc_write(options->fd, TI_CURSOR_LEFT);
+				nrl_write_esc(TI_CURSOR_LEFT);
 			}
 			break;
 		}
@@ -183,8 +185,10 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		if (is_backspace) {
 			input_length--;
 			line_cursor--;
-			esc_write(options->fd, TI_CURSOR_LEFT);
+			nrl_write_esc(TI_CURSOR_LEFT);
 		}
+
+		nrl_flush();
 	}
 
 	// Reset terminal settings
@@ -203,11 +207,12 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	}
 
 	// Put terminal into local mode
-	esc_write(options->fd, TI_KEYPAD_LOCAL);
+	nrl_write_esc(TI_KEYPAD_LOCAL);
 
 	// Write newline
 	char nl_buf = '\n';
-	write(options->fd, &nl_buf, sizeof(char));
+	nrl_write(&nl_buf, sizeof(char));
+	nrl_flush();
 	line_buf[input_length] = '\0';
 
 	// Resend signal to user
@@ -228,22 +233,6 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 static void sig_handler(int code) {
 	recvd_signal = code;
-}
-
-/**
- * @brief Write an escape sequence.
- *
- * @param[in] fd - File descriptor.
- * @param[in] sequence - Sequence identifier.
- * @return Write command result.
- */
-static ssize_t esc_write(int fd, terminfo_entry sequence) {
-	const char *as_text = nrl_lookup_seq(sequence);
-	if (as_text == NULL) {
-		return 0;
-	}
-
-	return write(fd, as_text, strlen(as_text));
 }
 
 /**

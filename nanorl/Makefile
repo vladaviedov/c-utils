@@ -1,16 +1,22 @@
 CFLAGS += -I./include
 BUILD=../build
+OBJECTS=$(BUILD)/obj/nanorl.o \
+		$(BUILD)/obj/terminfo.o \
+		$(BUILD)/obj/printer.o
 
 .PHONY: all
 all: headers $(LIB_TARGET)
 
-$(LIB_TARGET): $(BUILD)/obj/nanorl.o $(BUILD)/obj/terminfo.o
+$(LIB_TARGET): $(OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
 $(BUILD)/obj/nanorl.o: src/nanorl.c src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/obj/terminfo.o: src/terminfo.c src/terminfo.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/obj/printer.o: src/printer.c src/printer.h src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: headers
