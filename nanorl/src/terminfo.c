@@ -6,22 +6,39 @@
 #include <stdint.h>
 #include <string.h>
 
+#define DEBIAN 1
+
+// Reference: man term
+#define MAGIC_INT16 0432
+#define MAGIC_INT32 01036
+
+// Reference: man terminfo
 static const char *db_path[] = {
 	"/usr/share/terminfo",
+#if DEBIAN == 1
+	"/etc/terminfo",
 	"/lib/terminfo",
+#endif
 	NULL,
 };
-static const char *cache[NRL_ENTRY_COUNT] = { NULL };
+
+// Reference: ncurses <term.h> lists these
+// It would be nice to have a better reference
+static const uint8_t offsets[] = {
+	79u, // key_left
+	83u, // key_right
+	55u, // key_backspace
+	88u, // keypad_local
+	89u, // keypad_xmit
+};
+static const uint32_t offsets_len = sizeof(offsets) / sizeof(uint8_t);
+
+static char *strings_table = NULL;
+static const char *cache[TI_ENTRY_COUNT] = { NULL };
 
 static FILE *find_terminfo(const char *term);
 static FILE *try_open(const char *ti_path, const char *term);
 static int parse(FILE *terminfo);
-
-// TODO: remove
-// Standard reference codes
-/* static const char kcub1[] = { 0x1b, 0x5b, 0x44, 0x00 }; */
-/* static const char kcuf1[] = { 0x1b, 0x5b, 0x43, 0x00 }; */
-/* static const char kbs[] = { 0x7f, 0x00 }; */
 
 int nrl_load_terminfo(void) {
 	const char *term = getenv("TERM");
@@ -29,7 +46,7 @@ int nrl_load_terminfo(void) {
 	// Check for shortcuts
 	if (strstr(term, "xterm") != NULL) {
 		// TODO: xterm shortcut
-		return 1;
+		/* return 1; */
 	}
 
 	// Do a proper search
@@ -38,12 +55,10 @@ int nrl_load_terminfo(void) {
 		return 0;
 	}
 
-	// TODO: Parse terminfo
-
-	return 1;
+	return parse(terminfo);
 }
 
-const char *nrl_lookup_seq(nrl_terminfo_entry name) {
+const char *nrl_lookup_seq(terminfo_entry name) {
 	return cache[name];
 }
 
@@ -117,5 +132,48 @@ static FILE *try_open(const char *ti_path, const char *term) {
 }
 
 static int parse(FILE *terminfo) {
-	return 1;
+	// Reference: man term
+	uint16_t header[6];
+	fread(header, sizeof(uint16_t), 6, terminfo);
+
+	int numbers_element_size = 0;
+	switch (header[0]) {
+	case MAGIC_INT16:
+		numbers_element_size = sizeof(int16_t);
+		break;
+	case MAGIC_INT32:
+		numbers_element_size = sizeof(int32_t);
+		break;
+	default:
+		return 0;
+	}
+
+	uint32_t str_start = header[1] + header[2];
+	// Extra padding byte
+	if (str_start & 1) {
+		str_start++;
+	}
+	str_start += numbers_element_size * header[3];
+
+	// Load strings section
+	fseek(terminfo, str_start, SEEK_CUR);
+	int16_t strings[header[4]];
+	fread(strings, sizeof(int16_t), header[4], terminfo);
+	// Load strings table
+	strings_table = malloc(header[5]);
+	fread(strings_table, 1, header[5], terminfo);
+
+	// Look up all capabilities needed
+	int ret_code = 1;
+	for (uint32_t i = 0; i < offsets_len; i++) {
+		uint8_t index = offsets[i];
+		int16_t offset = strings[index];
+		if (offset == -1) {
+			ret_code = 2;
+		}
+
+		cache[i] = strings_table + offset;
+	}
+	
+	return ret_code;
 }

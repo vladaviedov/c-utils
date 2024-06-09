@@ -98,13 +98,13 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 	while ((res = read(options->fd, input_buf, sizeof(char) * 4)) > 0 && input_buf[0] != '\n') {
 		// Special inputs
 		if (res > 1) {
-			if (strncmp(input_buf, nrl_lookup_seq(NRL_TI_LEFT), res) == 0) {
+			if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_LEFT), res) == 0) {
 				if (line_cursor > 0) {
 					line_cursor--;
 					write(options->fd, input_buf, res);
 				}
 			}
-			if (strncmp(input_buf, nrl_lookup_seq(NRL_TI_RIGHT), res) == 0) {
+			if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_RIGHT), res) == 0) {
 				if (line_cursor < input_length) {
 					line_cursor++;
 					write(options->fd, input_buf, res);
@@ -114,7 +114,7 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 			continue;
 		}
 
-		int is_backspace = (input_buf[0] == nrl_lookup_seq(NRL_TI_BACKSPACE)[0]);
+		int is_backspace = (input_buf[0] == nrl_lookup_seq(TI_KEY_BACKSPACE)[0]);
 		if (is_backspace) {
 			// Backspace input
 			if (line_cursor == 0) {

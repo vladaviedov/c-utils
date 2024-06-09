@@ -20,7 +20,7 @@ define make_sublib
 OBJECTS += $(BUILD)/lib/$(1).a
 DOC_DIRS += $(1)/src $(1)/include
 
-.PHONY: $(1)
+.PHONY: $(BUILD)/lib/$(1).a
 $(BUILD)/lib/$(1).a:
 	$(MAKE) -C $(1) \
 		LIB_TARGET=../$(BUILD)/lib/$(1).a
