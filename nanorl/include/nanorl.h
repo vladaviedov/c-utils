@@ -12,42 +12,42 @@
  * @enum nrl_error
  * Optional error code for nanorl functions.
  *
- * @var nrl_error::NRL_OK
+ * @var nrl_error::NRL_ERR_OK
  * No errors were detected.
  *
- * @var nrl_error::NRL_EMPTY
+ * @var nrl_error::NRL_ERR_EMPTY
  * No user input provided.
  *
- * @var nrl_error::NRL_BAD_FD
+ * @var nrl_error::NRL_ERR_BAD_FD
  * Library invoked with a bad file descriptor.
  *
- * @var nrl_error::NRL_SYS_ERR
+ * @var nrl_error::NRL_ERR_SYS
  * Operating system error; check errno for more info.
  */
 typedef enum {
-	NRL_OK = 0,
-	NRL_EMPTY = 1,
-	NRL_BAD_FD = 2,
-	NRL_SYS_ERR = 3,
+	NRL_ERR_OK = 0,
+	NRL_ERR_EMPTY = 1,
+	NRL_ERR_BAD_FD = 2,
+	NRL_ERR_SYS = 3,
 } nrl_error;
 
 /**
  * @enum nrl_echo_mode
  * Echo style.
  *
- * @var nrl_echo_mode::NRL_NO_ECHO
+ * @var nrl_echo_mode::NRL_ECHO_NO
  * Disable echo completely.
  *
- * @var nrl_echo_mode::NRL_ECHO
+ * @var nrl_echo_mode::NRL_ECHO_YES
  * Echo user input.
  *
- * @var nrl_echo_mode::NRL_FAKE_ECHO
+ * @var nrl_echo_mode::NRL_ECHO_FAKE
  * Replace typed characters with a symbol.
  */
 typedef enum {
-	NRL_NO_ECHO = 0,
-	NRL_ECHO = 1,
-	NRL_FAKE_ECHO = 2,
+	NRL_ECHO_NO = 0,
+	NRL_ECHO_YES = 1,
+	NRL_ECHO_FAKE = 2,
 } nrl_echo_mode;
 
 /**

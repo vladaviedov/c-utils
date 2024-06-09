@@ -43,7 +43,7 @@ char *nanorl_fd(int fd, const char *prompt, nrl_error *err) {
 	nrl_opts options = {
 		.fd = fd,
 		.prompt = prompt,
-		.echo = NRL_ECHO,
+		.echo = NRL_ECHO_YES,
 		.echo_repl = '\0',
 	};
 
@@ -56,21 +56,21 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	}
 
 	if (options->fd < 0) {
-		safe_assign(err, NRL_BAD_FD);
+		safe_assign(err, NRL_ERR_BAD_FD);
 		return NULL;
 	}
 
 	// Setup terminal options
 	struct termios old_attr;
 	if (tcgetattr(options->fd, &old_attr) < 0) {
-		safe_assign(err, NRL_SYS_ERR);
+		safe_assign(err, NRL_ERR_SYS);
 		return NULL;
 	}
 
 	struct termios new_attr = old_attr;
 	new_attr.c_lflag &= ~(ICANON | ECHO);
 	if (tcsetattr(options->fd, TCSAFLUSH, &new_attr) < 0) {
-		safe_assign(err, NRL_SYS_ERR);
+		safe_assign(err, NRL_ERR_SYS);
 		return NULL;
 	}
 
@@ -87,7 +87,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	if (sigaction(SIGINT, &new_sa, &old_sigint_sa) < 0
 		|| sigaction(SIGTERM, &new_sa, &old_sigterm_sa) < 0
 		|| sigaction(SIGQUIT, &new_sa, &old_sigquit_sa) < 0) {
-		safe_assign(err, NRL_SYS_ERR);
+		safe_assign(err, NRL_ERR_SYS);
 		return NULL;
 	}
 
@@ -162,15 +162,15 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		char *redraw_start = line_buf + (line_cursor - 1);
 		uint32_t redraw_length = input_length - (line_cursor - 1);
 		switch (options->echo) {
-		case NRL_NO_ECHO:
+		case NRL_ECHO_NO:
 			break;
-		case NRL_ECHO:
+		case NRL_ECHO_YES:
 			write(options->fd, redraw_start, redraw_length * sizeof(char));
 			for (uint32_t i = 1; i < redraw_length; i++) {
 				esc_write(options->fd, TI_CURSOR_LEFT);
 			}
 			break;
-		case NRL_FAKE_ECHO:
+		case NRL_ECHO_FAKE:
 			for (uint32_t i = 0; i < redraw_length; i++) {
 				write(options->fd, &options->echo_repl, sizeof(char));
 			}
@@ -191,13 +191,13 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	if (sigaction(SIGINT, &old_sigint_sa, NULL) < 0
 		|| sigaction(SIGTERM, &old_sigterm_sa, NULL) < 0
 		|| sigaction(SIGQUIT, &old_sigquit_sa, NULL) < 0) {
-		safe_assign(err, NRL_SYS_ERR);
+		safe_assign(err, NRL_ERR_SYS);
 		free(line_buf);
 		return NULL;
 	}
 
 	if (tcsetattr(options->fd, TCSAFLUSH, &old_attr) < 0) {
-		safe_assign(err, NRL_SYS_ERR);
+		safe_assign(err, NRL_ERR_SYS);
 		free(line_buf);
 		return NULL;
 	}
@@ -217,12 +217,12 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 	// Exit
 	if (input_length == 0) {
-		safe_assign(err, NRL_EMPTY);
+		safe_assign(err, NRL_ERR_EMPTY);
 		free(line_buf);
 		return NULL;
 	}
 
-	safe_assign(err, NRL_OK);
+	safe_assign(err, NRL_ERR_OK);
 	return line_buf;
 }
 
