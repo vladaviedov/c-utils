@@ -24,8 +24,13 @@ test: $(TARGET_TEST)
 $(TARGET_TEST): test/nanorl_tests.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Example
+.PHONY: example
+example: example/nanorl_example.c
+	$(CC) $(CFLAGS) $< -o $(BIN_TARGET) $(LDFLAGS)
+
 # Format
-FORMAT_FILES=src/nanorl.c include/nanorl.h
+FORMAT_FILES=src/nanorl.c include/nanorl.h example/nanorl_example.c
 	# test/stack_tests.cpp
 
 .PHONY: checkformat

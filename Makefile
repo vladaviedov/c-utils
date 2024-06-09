@@ -11,6 +11,7 @@ OBJECTS=
 TEST_COMPONENTS=
 TEST_OBJECTS=
 DOC_DIRS=
+EXAMPLES=
 
 .PHONY: all
 all: dirs $(TARGET)
@@ -37,6 +38,16 @@ $(1)_tests:
 		TEST_TARGET=../$(BUILD)/obj/$(1)_tests.o
 endef
 
+# make_sublib_example(target_name)
+define make_sublib_example
+EXAMPLES += $(BUILD)/bin/$(1)_example
+
+.PHONY: $(BUILD)/bin/$(1)_example
+$(BUILD)/bin/$(1)_example:
+	$(MAKE) -C $(1) example \
+		BIN_TARGET=../$(BUILD)/bin/$(1)_example
+endef
+
 # Configuration
 CONFIG_PATH=build.conf
 include $(CONFIG_PATH)
@@ -54,6 +65,7 @@ endif
 ifeq ($(nanorl),1)
 $(eval $(call make_sublib,nanorl))
 $(eval $(call make_sublib_test,nanorl))
+$(eval $(call make_sublib_example,nanorl))
 endif
 
 # Build
@@ -64,6 +76,7 @@ dirs:
 	mkdir -p $(BUILD)/obj
 	mkdir -p $(BUILD)/include/c-utils
 	mkdir -p $(BUILD)/test
+	mkdir -p $(BUILD)/bin
 
 .PHONY: $(TARGET)
 $(TARGET): $(OBJECTS)
@@ -98,6 +111,12 @@ coverage:
 	lcov --no-external --capture -d $(shell pwd) -o $(COV_DIR)/report_aux.info
 	lcov -a $(COV_DIR)/report_base.info -a $(COV_DIR)/report_aux.info -o $(COV_DIR)/report.info
 	genhtml $(COV_DIR)/report.info -o $(COV_DIR)
+
+# Examples
+export LDFLAGS=-L../$(BUILD)/lib -lutils
+
+.PHONY: example
+example: $(EXAMPLES)
 
 # Format
 export FORMAT=clang-format
