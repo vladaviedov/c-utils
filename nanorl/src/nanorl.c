@@ -1,3 +1,11 @@
+/**
+ * @file nanorl.c
+ * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
+ * @version pre1.0
+ * @date 2024
+ * @license LGPLv3.0
+ * @brief Small and simple line editing library.
+ */
 #define _POSIX_C_SOURCE 200809L
 #include "nanorl.h"
 
@@ -24,8 +32,8 @@ static int recvd_signal;
 static void sig_handler(int code);
 
 static ssize_t esc_write(int fd, terminfo_entry sequence);
-static void shift_arr(char *array, uint32_t length, uint32_t index);
-static void unshift_arr(char *array, uint32_t length, uint32_t index);
+static void shift_str(char *array, uint32_t length, uint32_t index);
+static void unshift_str(char *array, uint32_t length, uint32_t index);
 
 char *nanorl(const char *prompt, nrl_error *err) {
 	return nanorl_fd(STDIN_FILENO, prompt, err);
@@ -39,10 +47,10 @@ char *nanorl_fd(int fd, const char *prompt, nrl_error *err) {
 		.echo_repl = '\0',
 	};
 
-	return nanorl_adv(&options, err);
+	return nanorl_opts(&options, err);
 }
 
-char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
+char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	if (!nrl_load_terminfo()) {
 		return NULL;
 	}
@@ -133,7 +141,7 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 				continue;
 			}
 
-			unshift_arr(line_buf, input_length, line_cursor - 1);
+			unshift_str(line_buf, input_length, line_cursor - 1);
 			line_buf[input_length - 1] = ' ';
 			esc_write(options->fd, TI_CURSOR_LEFT);
 		} else {
@@ -143,7 +151,7 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 			}
 
 			if (line_cursor != input_length) {
-				shift_arr(line_buf, input_length, line_cursor);
+				shift_str(line_buf, input_length, line_cursor);
 			}
 			line_buf[line_cursor] = input_buf[0];
 			input_length++;
@@ -222,6 +230,13 @@ static void sig_handler(int code) {
 	recvd_signal = code;
 }
 
+/**
+ * @brief Write an escape sequence.
+ *
+ * @param[in] fd - File descriptor.
+ * @param[in] sequence - Sequence identifier.
+ * @return Write command result.
+ */
 static ssize_t esc_write(int fd, terminfo_entry sequence) {
 	const char *as_text = nrl_lookup_seq(sequence);
 	if (as_text == NULL) {
@@ -231,13 +246,27 @@ static ssize_t esc_write(int fd, terminfo_entry sequence) {
 	return write(fd, as_text, strlen(as_text));
 }
 
-static void shift_arr(char *array, uint32_t length, uint32_t index) {
+/**
+ * @brief Insert element into string, shifting elements forward.
+ *
+ * @param[in,out] array - String.
+ * @param[in] length - Current length of string.
+ * @param[in] index - Index to insert into.
+ */
+static void shift_str(char *array, uint32_t length, uint32_t index) {
 	for (uint32_t i = length; i > index; i--) {
 		array[i] = array[i - 1];
 	}
 }
 
-static void unshift_arr(char *array, uint32_t length, uint32_t index) {
+/**
+ * @brief Erase element in string, shifting elements back.
+ *
+ * @param[in,out] array - String.
+ * @param[in] length - Current length of string.
+ * @param[in] index - Index to erase.
+ */
+static void unshift_str(char *array, uint32_t length, uint32_t index) {
 	for (uint32_t i = index; i < length; i++) {
 		array[i] = array[i + 1];
 	}

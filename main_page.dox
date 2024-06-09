@@ -10,4 +10,5 @@
  * Components:
  * - @ref vector.h "Vector"
  * - @ref stack.h "Stack"
+ * - @ref nanorl.h "Nanorl"
  */

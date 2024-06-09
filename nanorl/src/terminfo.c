@@ -1,3 +1,11 @@
+/**
+ * @file terminfo.c
+ * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
+ * @version pre1.0
+ * @date 2024
+ * @license LGPLv3.0
+ * @brief Terminfo finder and parser.
+ */
 #define _POSIX_C_SOURCE 200809L
 #include "terminfo.h"
 
@@ -6,6 +14,7 @@
 #include <stdint.h>
 #include <string.h>
 
+// Enable Debian-specific terminfo locations
 #define DEBIAN 1
 
 // Reference: man term
@@ -126,6 +135,13 @@ static FILE *find_terminfo(const char *term) {
 	return NULL;
 }
 
+/**
+ * @brief Try a certain terminfo database directory.
+ *
+ * @param[in] ti_path - Path to database.
+ * @param[in] term - Name of terminal.
+ * @return Open file or NULL if not found.
+ */
 static FILE *try_open(const char *ti_path, const char *term) {
 	// Path format: TERMINFO/INITIAL/TERMINAL \0
 	uint32_t length = strlen(ti_path) + 3 + strlen(term) + 1;
@@ -135,6 +151,12 @@ static FILE *try_open(const char *ti_path, const char *term) {
 	return fopen(full_path, "r");
 }
 
+/**
+ * @brief Parse terminfo file.
+ *
+ * @param[in] terminfo - Input file.
+ * @return 0 - file invalid, 1 - good, 2 - incomplete.
+ */
 static int parse(FILE *terminfo) {
 	// Reference: man term
 	uint16_t header[6];
