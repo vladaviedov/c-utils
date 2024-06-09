@@ -20,11 +20,10 @@
 		*var_ptr = val; \
 	}
 
-static const char newline = '\n';
-static const char backspace = '\b';
-
 static int recvd_signal;
 static void sig_handler(int code);
+
+static ssize_t esc_write(int fd, terminfo_entry sequence);
 static void shift_arr(char *array, uint32_t length, uint32_t index);
 static void unshift_arr(char *array, uint32_t length, uint32_t index);
 
@@ -52,7 +51,7 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 		safe_assign(err, NRL_BAD_FD);
 		return NULL;
 	}
-	
+
 	// Setup terminal options
 	struct termios old_attr;
 	if (tcgetattr(options->fd, &old_attr) < 0) {
@@ -84,8 +83,12 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 		return NULL;
 	}
 
+	// Put terminal into application mode
+	// See: https://invisible-island.net/xterm/xterm.faq.html#xterm_arrows
+	esc_write(options->fd, TI_KEYPAD_XMIT);
+	
 	// Print prompt:
-	write(options->fd, options->prompt, strlen(options->prompt) + 1);
+	write(options->fd, options->prompt, strlen(options->prompt));
 
 	// Input processing
 	char *line_buf = malloc(sizeof(char) * 1024);
@@ -101,13 +104,13 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 			if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_LEFT), res) == 0) {
 				if (line_cursor > 0) {
 					line_cursor--;
-					write(options->fd, input_buf, res);
+					esc_write(options->fd, TI_CURSOR_LEFT);
 				}
 			}
 			if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_RIGHT), res) == 0) {
 				if (line_cursor < input_length) {
 					line_cursor++;
-					write(options->fd, input_buf, res);
+					esc_write(options->fd, TI_CURSOR_RIGHT);
 				}
 			}
 
@@ -123,7 +126,7 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 
 			unshift_arr(line_buf, input_length, line_cursor - 1);
 			line_buf[input_length - 1] = ' ';
-			write(options->fd, &backspace, sizeof(char));
+			esc_write(options->fd, TI_CURSOR_LEFT);
 		} else {
 			// Standard inputs
 			if (input_length == alloc_length - 1) {
@@ -147,7 +150,7 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 		case NRL_ECHO:
 			write(options->fd, redraw_start, redraw_length * sizeof(char));
 			for (uint32_t i = 1; i < redraw_length; i++) {
-				write(options->fd, &backspace, sizeof(char));
+				esc_write(options->fd, TI_CURSOR_LEFT);
 			}
 			break;
 		case NRL_FAKE_ECHO:
@@ -155,16 +158,15 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 				write(options->fd, &options->echo_repl, sizeof(char));
 			}
 			for (uint32_t i = 1; i < redraw_length; i++) {
-				write(options->fd, &backspace, sizeof(char));
+				esc_write(options->fd, TI_CURSOR_LEFT);
 			}
 			break;
 		}
 
-		// Not work
 		if (is_backspace) {
 			input_length--;
 			line_cursor--;
-			write(options->fd, &backspace, sizeof(char));
+			esc_write(options->fd, TI_CURSOR_LEFT);
 		}
 	}
 
@@ -183,8 +185,12 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 		return NULL;
 	}
 
+	// Put terminal into local mode
+	esc_write(options->fd, TI_KEYPAD_LOCAL);
+
 	// Write newline
-	write(options->fd, &newline, sizeof(char));
+	char nl_buf = '\n';
+	write(options->fd, &nl_buf, sizeof(char));
 	line_buf[input_length] = '\0';
 
 	// Resend signal to user
@@ -205,6 +211,15 @@ char *nanorl_adv(const nrl_opts *options, nrl_error *err) {
 
 static void sig_handler(int code) {
 	recvd_signal = code;
+}
+
+static ssize_t esc_write(int fd, terminfo_entry sequence) {
+	const char *as_text = nrl_lookup_seq(sequence);
+	if (as_text == NULL) {
+		return 0;
+	}
+
+	return write(fd, as_text, strlen(as_text));
 }
 
 static void shift_arr(char *array, uint32_t length, uint32_t index) {

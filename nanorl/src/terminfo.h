@@ -1,7 +1,9 @@
 #pragma once
 
 typedef enum {
-	TI_KEY_LEFT = 0,
+	TI_CURSOR_LEFT = 0,
+	TI_CURSOR_RIGHT,
+	TI_KEY_LEFT,
 	TI_KEY_RIGHT,
 	TI_KEY_BACKSPACE,
 	TI_KEYPAD_LOCAL,

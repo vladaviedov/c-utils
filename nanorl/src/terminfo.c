@@ -25,6 +25,8 @@ static const char *db_path[] = {
 // Reference: ncurses <term.h> lists these
 // It would be nice to have a better reference
 static const uint8_t offsets[] = {
+	14u, // cursor_left
+	17u, // cursor_right
 	79u, // key_left
 	83u, // key_right
 	55u, // key_backspace
