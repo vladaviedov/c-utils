@@ -45,6 +45,10 @@ void nrl_write_esc(terminfo_entry sequence) {
 }
 
 void nrl_flush(void) {
+	if (byte_count == 0) {
+		return;
+	}
+
 	write(print_fd, write_buf, byte_count);
 	byte_count = 0;
 }

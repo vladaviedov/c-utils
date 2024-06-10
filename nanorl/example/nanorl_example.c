@@ -17,7 +17,9 @@ int main(void) {
 	int tty = open("/dev/tty", O_RDWR);
 	input = nanorl_fd(tty, "enter from tty: ", NULL);
 	printf("TTY typed: %s\n\n", input);
-	free(input);
+	if (input != NULL) {
+		free(input);
+	}
 
 	// Take in a password
 	nrl_opts options = {
@@ -28,8 +30,19 @@ int main(void) {
 	};
 	input = nanorl_opts(&options, NULL);
 	printf("Your password is '%s' :)\n\n", input);
-	memset(input, 0, strlen(input) + 1);
-	free(input);
+	if (input != NULL) {
+		memset(input, 0, strlen(input) + 1);
+		free(input);
+	}
+
+	// Or alternatively have it fully hidden
+	options.echo = NRL_ECHO_NO;
+	input = nanorl_opts(&options, NULL);
+	printf("Your password is '%s' :)\n\n", input);
+	if (input != NULL) {
+		memset(input, 0, strlen(input) + 1);
+		free(input);
+	}
 
 	// Handle library errors
 	nrl_error err;

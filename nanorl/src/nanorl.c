@@ -81,8 +81,9 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	struct sigaction old_sigterm_sa;
 	struct sigaction old_sigquit_sa;
 
-	struct sigaction new_sa;
+	struct sigaction new_sa; 
 	sigemptyset(&new_sa.sa_mask);
+	new_sa.sa_flags = 0;
 	new_sa.sa_handler = &sig_handler;
 
 	if (sigaction(SIGINT, &new_sa, &old_sigint_sa) < 0
@@ -105,47 +106,60 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	uint32_t alloc_length = 1024;
 	uint32_t input_length = 0;
 	uint32_t line_cursor = 0;
+	char whitespace = ' ';
 
 	ssize_t res;
-	char input_buf[4];
-	while ((res = read(options->fd, input_buf, sizeof(char) * 4)) > 0 && input_buf[0] != '\n') {
+	char input_buf[8];
+	while ((res = read(options->fd, input_buf, sizeof(char) * 8)) > 0 && input_buf[0] != '\n') {
+		int backspace = strncmp(input_buf, nrl_lookup_seq(TI_KEY_BACKSPACE), res) == 0;
+
 		// Special inputs
-		if (res > 1) {
+		if (!backspace && res > 1) {
 			if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_LEFT), res) == 0) {
 				if (line_cursor > 0) {
 					line_cursor--;
-					nrl_write_esc(TI_CURSOR_LEFT);
+					if (options->echo != NRL_ECHO_NO) {
+						nrl_write_esc(TI_CURSOR_LEFT);
+					}
 				}
 			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_RIGHT), res) == 0) {
 				if (line_cursor < input_length) {
 					line_cursor++;
-					nrl_write_esc(TI_CURSOR_RIGHT);
+					if (options->echo != NRL_ECHO_NO) {
+						nrl_write_esc(TI_CURSOR_RIGHT);
+					}
 				}
 			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_HOME), res) == 0) {
 				for (uint32_t i = line_cursor; i > 0; i--) {
-					nrl_write_esc(TI_CURSOR_LEFT);
+					if (options->echo != NRL_ECHO_NO) {
+						nrl_write_esc(TI_CURSOR_LEFT);
+					}
 				}
 				line_cursor = 0;
 			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_END), res) == 0) {
 				for (uint32_t i = line_cursor; i < input_length; i++) {
-					nrl_write_esc(TI_CURSOR_RIGHT);
+					if (options->echo != NRL_ECHO_NO) {
+						nrl_write_esc(TI_CURSOR_RIGHT);
+					}
 				}
 				line_cursor = input_length;
 			}
 
+			nrl_flush();
 			continue;
 		}
 
-		int is_backspace = (input_buf[0] == nrl_lookup_seq(TI_KEY_BACKSPACE)[0]);
-		if (is_backspace) {
+		if (backspace) {
 			// Backspace input
 			if (line_cursor == 0) {
 				continue;
 			}
 
 			unshift_str(line_buf, input_length, line_cursor - 1);
+			if (options->echo != NRL_ECHO_NO) {
+				nrl_write_esc(TI_CURSOR_LEFT);
+			}
 			line_buf[input_length - 1] = ' ';
-			nrl_write_esc(TI_CURSOR_LEFT);
 		} else {
 			// Standard inputs
 			if (input_length == alloc_length - 1) {
@@ -168,27 +182,29 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 			break;
 		case NRL_ECHO_YES:
 			nrl_write(redraw_start, redraw_length * sizeof(char));
-			for (uint32_t i = 1; i < redraw_length; i++) {
-				nrl_write_esc(TI_CURSOR_LEFT);
-			}
 			break;
 		case NRL_ECHO_FAKE:
-			for (uint32_t i = 0; i < redraw_length; i++) {
+			for (uint32_t i = 0; i < redraw_length - 1; i++) {
 				nrl_write(&options->echo_repl, sizeof(char));
 			}
-			for (uint32_t i = 1; i < redraw_length; i++) {
-				nrl_write_esc(TI_CURSOR_LEFT);
-			}
+
+			const char *final = backspace ? &whitespace : &options->echo_repl;
+			nrl_write(final, sizeof(char));
 			break;
 		}
 
-		if (is_backspace) {
+		if (backspace) {
 			input_length--;
 			line_cursor--;
-			nrl_write_esc(TI_CURSOR_LEFT);
 		}
 
-		nrl_flush();
+		if (options->echo != NRL_ECHO_NO) {
+			for (uint32_t i = 1; i < redraw_length + backspace; i++) {
+				nrl_write_esc(TI_CURSOR_LEFT);
+			}
+
+			nrl_flush();
+		}
 	}
 
 	// Reset terminal settings

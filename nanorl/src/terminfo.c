@@ -54,7 +54,15 @@ static FILE *try_open(const char *ti_path, const char *term);
 static int parse(FILE *terminfo);
 
 int nrl_load_terminfo(void) {
+	// Already loaded
+	if (strings_table != NULL) {
+		return 1;
+	}
+
 	const char *term = getenv("TERM");
+	if (term == NULL) {
+		return 0;
+	}
 	
 	// Check for shortcuts
 	if (strstr(term, "xterm") != NULL) {
@@ -201,5 +209,6 @@ static int parse(FILE *terminfo) {
 		cache[i] = strings_table + offset;
 	}
 	
+	fclose(terminfo);
 	return ret_code;
 }
