@@ -2,7 +2,8 @@ CFLAGS += -I./include
 BUILD=../build
 OBJECTS=$(BUILD)/obj/nanorl.o \
 		$(BUILD)/obj/terminfo.o \
-		$(BUILD)/obj/printer.o
+		$(BUILD)/obj/printer.o \
+		$(BUILD)/obj/fastload.o
 
 .PHONY: all
 all: headers $(LIB_TARGET)
@@ -17,6 +18,9 @@ $(BUILD)/obj/terminfo.o: src/terminfo.c src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/obj/printer.o: src/printer.c src/printer.h src/terminfo.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/obj/fastload.o: src/fastload.c src/fastload.h src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: headers
@@ -36,8 +40,10 @@ example: example/nanorl_example.c
 	$(CC) $(CFLAGS) $< -o $(BIN_TARGET) $(LDFLAGS)
 
 # Format
-FORMAT_FILES=src/nanorl.c include/nanorl.h example/nanorl_example.c
-	# test/stack_tests.cpp
+FORMAT_FILES=$(shell find src -type f) \
+			 $(shell find include -type f) \
+			 $(shell find example -type f)
+			 # $(shell find test -type f)
 
 .PHONY: checkformat
 checkformat:

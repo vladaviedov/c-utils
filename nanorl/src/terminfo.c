@@ -14,8 +14,8 @@
 #include <stdint.h>
 #include <string.h>
 
-// Enable Debian-specific terminfo locations
-#define DEBIAN 1
+#include "config.h"
+#include "fastload.h"
 
 // Reference: man term
 #define MAGIC_INT16 0432
@@ -46,6 +46,7 @@ static const uint8_t offsets[] = {
 };
 static const uint32_t offsets_len = sizeof(offsets) / sizeof(uint8_t);
 
+static int is_loaded = 0;
 static char *strings_table = NULL;
 static const char *cache[TI_ENTRY_COUNT] = { NULL };
 
@@ -55,7 +56,7 @@ static int parse(FILE *terminfo);
 
 int nrl_load_terminfo(void) {
 	// Already loaded
-	if (strings_table != NULL) {
+	if (is_loaded) {
 		return 1;
 	}
 
@@ -64,11 +65,14 @@ int nrl_load_terminfo(void) {
 		return 0;
 	}
 	
-	// Check for shortcuts
+#if ENABLE_FASTLOAD == 1
+	// Fastload xterm-based terminals
 	if (strstr(term, "xterm") != NULL) {
-		// TODO: xterm shortcut
-		/* return 1; */
+		nrl_fl_xterm(cache);
+		is_loaded = 1;
+		return 1;
 	}
+#endif
 
 	// Do a proper search
 	FILE *terminfo = find_terminfo(term);
@@ -210,5 +214,7 @@ static int parse(FILE *terminfo) {
 	}
 	
 	fclose(terminfo);
+	is_loaded = 1;
+
 	return ret_code;
 }
