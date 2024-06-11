@@ -9,9 +9,9 @@
 #define _POSIX_C_SOURCE 200809L
 #include "terminfo.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 
 #include "config.h"
@@ -64,7 +64,7 @@ int nrl_load_terminfo(void) {
 	if (term == NULL) {
 		return 0;
 	}
-	
+
 #if ENABLE_FASTLOAD == 1
 	// Fastload xterm-based terminals
 	if (strstr(term, "xterm") != NULL) {
@@ -212,7 +212,7 @@ static int parse(FILE *terminfo) {
 
 		cache[i] = strings_table + offset;
 	}
-	
+
 	fclose(terminfo);
 	is_loaded = 1;
 

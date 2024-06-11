@@ -9,17 +9,17 @@
 #define _POSIX_C_SOURCE 200809L
 #include "nanorl.h"
 
+#include <errno.h>
+#include <signal.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
-#include <errno.h>
 #include <termios.h>
 #include <unistd.h>
-#include <signal.h>
 
-#include "terminfo.h"
 #include "printer.h"
+#include "terminfo.h"
 
 // Line buffer options
 #define START_ALLOC 256
@@ -28,9 +28,9 @@
 // Input (1 keystroke) buffer options
 #define INPUT_BUF_SIZE 16
 
-#define safe_assign(var_ptr, val) \
-	if (var_ptr != NULL) { \
-		*var_ptr = val; \
+#define safe_assign(var_ptr, val)                                              \
+	if (var_ptr != NULL) {                                                     \
+		*var_ptr = val;                                                        \
 	}
 
 static int recvd_signal;
@@ -88,7 +88,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	struct sigaction old_sigterm_sa;
 	struct sigaction old_sigquit_sa;
 
-	struct sigaction new_sa; 
+	struct sigaction new_sa;
 	sigemptyset(&new_sa.sa_mask);
 	new_sa.sa_flags = 0;
 	new_sa.sa_handler = &sig_handler;
@@ -104,7 +104,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	// Put terminal into application mode
 	// See: https://invisible-island.net/xterm/xterm.faq.html#xterm_arrows
 	nrl_write_esc(TI_KEYPAD_XMIT);
-	
+
 	// Print prompt:
 	nrl_write(options->prompt, strlen(options->prompt));
 	nrl_flush();
@@ -117,8 +117,14 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 	ssize_t res;
 	char input_buf[INPUT_BUF_SIZE];
-	while ((res = read(options->fd, input_buf, sizeof(char) * INPUT_BUF_SIZE)) > 0 && input_buf[0] != '\n') {
-		int backspace = strncmp(input_buf, nrl_lookup_seq(TI_KEY_BACKSPACE), res) == 0;
+	while ((res = read(options->fd, input_buf, sizeof(char) * INPUT_BUF_SIZE))
+		   > 0) {
+		if (input_buf[0] == '\n') {
+			break;
+		}
+
+		int backspace
+			= strncmp(input_buf, nrl_lookup_seq(TI_KEY_BACKSPACE), res) == 0;
 
 		// Special inputs
 		if (!backspace && res > 1) {
@@ -129,21 +135,24 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 						nrl_write_esc(TI_CURSOR_LEFT);
 					}
 				}
-			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_RIGHT), res) == 0) {
+			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_RIGHT), res)
+					   == 0) {
 				if (line_cursor < input_length) {
 					line_cursor++;
 					if (options->echo != NRL_ECHO_NO) {
 						nrl_write_esc(TI_CURSOR_RIGHT);
 					}
 				}
-			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_HOME), res) == 0) {
+			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_HOME), res)
+					   == 0) {
 				for (uint32_t i = line_cursor; i > 0; i--) {
 					if (options->echo != NRL_ECHO_NO) {
 						nrl_write_esc(TI_CURSOR_LEFT);
 					}
 				}
 				line_cursor = 0;
-			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_END), res) == 0) {
+			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_END), res)
+					   == 0) {
 				for (uint32_t i = line_cursor; i < input_length; i++) {
 					if (options->echo != NRL_ECHO_NO) {
 						nrl_write_esc(TI_CURSOR_RIGHT);
