@@ -21,8 +21,12 @@
 #include "terminfo.h"
 #include "printer.h"
 
-#define START_ALLOC 1024
+// Line buffer options
+#define START_ALLOC 256
 #define FACTOR 2
+
+// Input (1 keystroke) buffer options
+#define INPUT_BUF_SIZE 16
 
 #define safe_assign(var_ptr, val) \
 	if (var_ptr != NULL) { \
@@ -34,6 +38,8 @@ static void sig_handler(int code);
 
 static void shift_str(char *array, uint32_t length, uint32_t index);
 static void unshift_str(char *array, uint32_t length, uint32_t index);
+
+static const char whitespace = ' ';
 
 char *nanorl(const char *prompt, nrl_error *err) {
 	return nanorl_fd(STDIN_FILENO, prompt, err);
@@ -77,6 +83,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 	// Setup signals
 	// TODO: need more signals?
+	struct sigaction old_sighup_sa;
 	struct sigaction old_sigint_sa;
 	struct sigaction old_sigterm_sa;
 	struct sigaction old_sigquit_sa;
@@ -86,7 +93,8 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	new_sa.sa_flags = 0;
 	new_sa.sa_handler = &sig_handler;
 
-	if (sigaction(SIGINT, &new_sa, &old_sigint_sa) < 0
+	if (sigaction(SIGHUP, &new_sa, &old_sighup_sa) < 0
+		|| sigaction(SIGINT, &new_sa, &old_sigint_sa) < 0
 		|| sigaction(SIGTERM, &new_sa, &old_sigterm_sa) < 0
 		|| sigaction(SIGQUIT, &new_sa, &old_sigquit_sa) < 0) {
 		safe_assign(err, NRL_ERR_SYS);
@@ -102,15 +110,14 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	nrl_flush();
 
 	// Input processing
-	char *line_buf = malloc(sizeof(char) * 1024);
+	char *line_buf = malloc(START_ALLOC * sizeof(char));
 	uint32_t alloc_length = 1024;
 	uint32_t input_length = 0;
 	uint32_t line_cursor = 0;
-	char whitespace = ' ';
 
 	ssize_t res;
-	char input_buf[8];
-	while ((res = read(options->fd, input_buf, sizeof(char) * 8)) > 0 && input_buf[0] != '\n') {
+	char input_buf[INPUT_BUF_SIZE];
+	while ((res = read(options->fd, input_buf, sizeof(char) * INPUT_BUF_SIZE)) > 0 && input_buf[0] != '\n') {
 		int backspace = strncmp(input_buf, nrl_lookup_seq(TI_KEY_BACKSPACE), res) == 0;
 
 		// Special inputs
@@ -163,7 +170,8 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		} else {
 			// Standard inputs
 			if (input_length == alloc_length - 1) {
-				line_buf = realloc(line_buf, alloc_length * FACTOR);
+				alloc_length *= FACTOR;
+				line_buf = realloc(line_buf, alloc_length);
 			}
 
 			if (line_cursor != input_length) {
@@ -208,7 +216,8 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	}
 
 	// Reset terminal settings
-	if (sigaction(SIGINT, &old_sigint_sa, NULL) < 0
+	if (sigaction(SIGHUP, &old_sighup_sa, NULL) < 0
+		|| sigaction(SIGINT, &old_sigint_sa, NULL) < 0
 		|| sigaction(SIGTERM, &old_sigterm_sa, NULL) < 0
 		|| sigaction(SIGQUIT, &old_sigquit_sa, NULL) < 0) {
 		safe_assign(err, NRL_ERR_SYS);
