@@ -2,7 +2,9 @@ PWD=$(shell pwd)
 export BUILD=$(PWD)/build
 
 export CC=gcc
-export CFLAGS=-Wall -Wextra -g -std=c99 -I $(BUILD)/include
+export CFLAGS=-std=c99 -I$(BUILD)/include
+CFLAGS_RELEASE=-O2
+CFLAGS_DEBUG=-Wall -Wextra -g
 export AR=ar
 export ARFLAGS=rvsc
 
@@ -15,8 +17,13 @@ TEST_OBJECTS=
 DOC_DIRS=
 EXAMPLES=
 
-.PHONY: all
-all: dirs $(TARGET)
+.PHONY: debug
+debug: CFLAGS += $(CFLAGS_DEBUG)
+debug: dirs $(TARGET)
+
+.PHONY: release
+release: CFLAGS += $(CFLAGS_RELEASE)
+release: dirs $(TARGET)
 
 # make_sublib(target_name)
 define make_sublib
