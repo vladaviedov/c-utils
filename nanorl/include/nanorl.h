@@ -9,6 +9,11 @@
 #pragma once
 
 /**
+ * Library version.
+ */
+#define NRL_LIB_VER "1.0"
+
+/**
  * @enum nrl_error
  * Optional error code for nanorl functions.
  *
