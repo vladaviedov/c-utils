@@ -3,10 +3,10 @@ CFLAGS += -I./include
 .PHONY: all
 all: headers $(LIB_TARGET)
 
-$(LIB_TARGET): $(BUILD)/obj/vector.o
+$(LIB_TARGET): $(BUILD)/obj/vector_vector.o
 	$(AR) $(ARFLAGS) $@ $^
 
-$(BUILD)/obj/vector.o: src/vector.c include/vector.h
+$(BUILD)/obj/vector_vector.o: src/vector.c include/vector.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: headers

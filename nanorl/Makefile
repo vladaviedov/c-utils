@@ -1,8 +1,8 @@
 CFLAGS += -I./include
-OBJECTS=$(BUILD)/obj/nanorl.o \
-		$(BUILD)/obj/terminfo.o \
-		$(BUILD)/obj/printer.o \
-		$(BUILD)/obj/fastload.o
+OBJECTS=$(BUILD)/obj/nanorl_nanorl.o \
+		$(BUILD)/obj/nanorl_terminfo.o \
+		$(BUILD)/obj/nanorl_printer.o \
+		$(BUILD)/obj/nanorl_fastload.o
 
 .PHONY: all
 all: headers $(LIB_TARGET)
@@ -10,16 +10,16 @@ all: headers $(LIB_TARGET)
 $(LIB_TARGET): $(OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(BUILD)/obj/nanorl.o: src/nanorl.c src/terminfo.h
+$(BUILD)/obj/nanorl_nanorl.o: src/nanorl.c src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/obj/terminfo.o: src/terminfo.c src/terminfo.h
+$(BUILD)/obj/nanorl_terminfo.o: src/terminfo.c src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/obj/printer.o: src/printer.c src/printer.h src/terminfo.h
+$(BUILD)/obj/nanorl_printer.o: src/printer.c src/printer.h src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/obj/fastload.o: src/fastload.c src/fastload.h src/terminfo.h
+$(BUILD)/obj/nanorl_fastload.o: src/fastload.c src/fastload.h src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: headers

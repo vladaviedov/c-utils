@@ -3,10 +3,10 @@ CFLAGS += -I./include
 .PHONY: all
 all: headers $(LIB_TARGET)
 
-$(LIB_TARGET): $(BUILD)/obj/stack.o
+$(LIB_TARGET): $(BUILD)/obj/stack_stack.o
 	$(AR) $(ARFLAGS) $@ $^
 
-$(BUILD)/obj/stack.o: src/stack.c include/stack.h
+$(BUILD)/obj/stack_stack.o: src/stack.c include/stack.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: headers
