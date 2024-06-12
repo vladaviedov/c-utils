@@ -1,10 +1,10 @@
 # c-utils
 
-Library providing utils for the C language for other projects.
+Collection of libraries providing utils for the C programming language.
 
 ## Dependencies
 
-- Build: C tool chain
+- Build: C tool chain, Make
 - Testing: `gtest`, C++ tool chain
 - Coverage: `lcov`
 - Documentation: `doxygen`
