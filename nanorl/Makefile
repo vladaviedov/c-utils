@@ -27,13 +27,6 @@ $(BUILD)/obj/fastload.o: src/fastload.c src/fastload.h src/terminfo.h
 headers:
 	cp -r include/** $(BUILD)/include/c-utils
 
-# Test
-.PHONY: test
-test: $(TARGET_TEST)
-
-$(TARGET_TEST): test/nanorl_tests.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
 # Example
 .PHONY: example
 example: example/nanorl_example.c
@@ -43,7 +36,6 @@ example: example/nanorl_example.c
 FORMAT_FILES=$(shell find src -type f) \
 			 $(shell find include -type f) \
 			 $(shell find example -type f)
-			 # $(shell find test -type f)
 
 .PHONY: checkformat
 checkformat:

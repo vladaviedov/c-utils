@@ -64,7 +64,6 @@ endif
 
 ifeq ($(nanorl),1)
 $(eval $(call make_sublib,nanorl))
-$(eval $(call make_sublib_test,nanorl))
 $(eval $(call make_sublib_example,nanorl))
 endif
 
