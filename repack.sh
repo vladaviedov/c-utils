@@ -1,5 +1,5 @@
 #/bin/sh
-# usage: repack.sh out in_list
-for sublib in "${@:2}"; do
-	ar -t $sublib | sed --expression='s/^/build\/obj\//' | xargs ar rvsc $1
+# usage: repack.sh build_dir out in_list
+for sublib in "${@:3}"; do
+	ar -t $sublib | sed --expression="s~^~$1/obj/~" | xargs ar rvsc $2
 done

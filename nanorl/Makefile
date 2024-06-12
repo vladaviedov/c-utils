@@ -1,5 +1,4 @@
 CFLAGS += -I./include
-BUILD=../build
 OBJECTS=$(BUILD)/obj/nanorl.o \
 		$(BUILD)/obj/terminfo.o \
 		$(BUILD)/obj/printer.o \

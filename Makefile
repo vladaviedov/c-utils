@@ -1,8 +1,10 @@
+PWD=$(shell pwd)
+export BUILD=$(PWD)/build
+
 export CC=gcc
-export CFLAGS=-Wall -Wextra -g -std=c99 -I ../build/include
+export CFLAGS=-Wall -Wextra -g -std=c99 -I $(BUILD)/include
 export AR=ar
 export ARFLAGS=rvsc
-BUILD=build
 
 TARGET=$(BUILD)/lib/libutils.a
 
@@ -24,7 +26,7 @@ DOC_DIRS += $(1)/src $(1)/include
 .PHONY: $(BUILD)/lib/$(1).a
 $(BUILD)/lib/$(1).a:
 	$(MAKE) -C $(1) \
-		LIB_TARGET=../$(BUILD)/lib/$(1).a
+		LIB_TARGET=$(BUILD)/lib/$(1).a
 endef
 
 # make_sublib_test(target_name)
@@ -35,7 +37,7 @@ TEST_OBJECTS += $(BUILD)/obj/$(1)_tests.o
 .PHONY: $(1)_tests
 $(1)_tests:
 	$(MAKE) -C $(1) test \
-		TEST_TARGET=../$(BUILD)/obj/$(1)_tests.o
+		TEST_TARGET=$(BUILD)/obj/$(1)_tests.o
 endef
 
 # make_sublib_example(target_name)
@@ -45,7 +47,7 @@ EXAMPLES += $(BUILD)/bin/$(1)_example
 .PHONY: $(BUILD)/bin/$(1)_example
 $(BUILD)/bin/$(1)_example:
 	$(MAKE) -C $(1) example \
-		BIN_TARGET=../$(BUILD)/bin/$(1)_example
+		BIN_TARGET=$(BUILD)/bin/$(1)_example
 endef
 
 # Configuration
@@ -80,7 +82,7 @@ dirs:
 .PHONY: $(TARGET)
 $(TARGET): $(OBJECTS)
 	rm -f $(TARGET)
-	./repack.sh $@ $^
+	./repack.sh $(BUILD) $@ $^
 
 .PHONY: clean
 clean:
@@ -88,7 +90,7 @@ clean:
 
 # Test
 export CXX=g++
-export CXXFLAGS=-Wall -Wextra -g -std=c++14 -I ../build/include
+export CXXFLAGS=-Wall -Wextra -g -std=c++14 -I $(BUILD)/include
 TEST_LDFLAGS=-lgtest -lgtest_main -lgcov
 TEST_TARGET=$(BUILD)/test/runtest
 COV_DIR=cov
@@ -112,7 +114,7 @@ coverage:
 	genhtml $(COV_DIR)/report.info -o $(COV_DIR)
 
 # Examples
-export LDFLAGS=-L../$(BUILD)/lib -lutils
+export LDFLAGS=-L$(BUILD)/lib -lutils
 
 .PHONY: example
 example: $(EXAMPLES)

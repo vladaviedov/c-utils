@@ -1,5 +1,4 @@
 CFLAGS += -I./include
-BUILD=../build
 
 .PHONY: all
 all: headers $(LIB_TARGET)
