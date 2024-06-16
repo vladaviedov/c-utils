@@ -6,7 +6,7 @@ export CFLAGS=-std=c99 -I$(BUILD)/include
 CFLAGS_RELEASE=-O2
 CFLAGS_DEBUG=-Wall -Wextra -g
 export AR=ar
-export ARFLAGS=rvsc
+export ARFLAGS=rvcS
 
 TARGET=$(BUILD)/lib/libutils.a
 
@@ -103,17 +103,17 @@ TEST_TARGET=$(BUILD)/test/runtest
 COV_DIR=cov
 
 .PHONY: test
-test: all $(TEST_COMPONENTS)
+test: debug $(TEST_COMPONENTS)
 	rm -f $(TEST_TARGET)
 	$(CXX) $(TEST_OBJECTS) $(TARGET) $(TEST_LDFLAGS) -o $(TEST_TARGET)
 	$(TEST_TARGET)
 
 .PHONY: coverage
-coverage: CFLAGS += -fprofile-arcs -ftest-coverage
+coverage: CFLAGS_DEBUG += -fprofile-arcs -ftest-coverage
 coverage: 
 	$(MAKE) clean
 	mkdir -p cov
-	$(MAKE) all CFLAGS='$(CFLAGS)'
+	$(MAKE) debug CFLAGS_DEBUG='$(CFLAGS_DEBUG)'
 	lcov --no-external --capture --initial -d . -o $(COV_DIR)/report_base.info
 	$(MAKE) test
 	lcov --no-external --capture -d $(shell pwd) -o $(COV_DIR)/report_aux.info
