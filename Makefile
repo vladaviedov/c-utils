@@ -6,7 +6,7 @@ export CFLAGS=-std=c99 -I$(BUILD)/include
 CFLAGS_RELEASE=-O2
 CFLAGS_DEBUG=-Wall -Wextra -g
 export AR=ar
-export ARFLAGS=rvsc
+export ARFLAGS=rvcS
 
 TARGET=$(BUILD)/lib/libutils.a
 
