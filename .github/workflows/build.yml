@@ -38,7 +38,7 @@ jobs:
     strategy:
       matrix:
         cc: [ gcc13, clang ]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: vmactions/freebsd-vm@v1
@@ -47,5 +47,5 @@ jobs:
           prepare: |
             pkg install -y gcc13 gmake
           run: |
-            make clean debug CC=${{ matrix.cc }}
-            make clean release CC=${{ matrix.cc }}
+            gmake clean debug CC=${{ matrix.cc }}
+            gmake clean release CC=${{ matrix.cc }}
