@@ -17,13 +17,13 @@
 static const char *xterm_stub[TI_ENTRY_COUNT] = {
 	"\b",
 	"\033[C",
+	"\033[?1h\033>",
+	"\033[?1h\033=",
 	"\033OD",
 	"\033OC",
 	"\177",
 	"\033OH",
 	"\033OF",
-	"\033[?1h\033>",
-	"\033[?1h\033=",
 };
 
 void nrl_fl_xterm(const char **cache) {

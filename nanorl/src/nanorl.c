@@ -20,6 +20,7 @@
 
 #include "io.h"
 #include "terminfo.h"
+#include "dfa.h"
 
 // Line buffer options
 #define START_ALLOC 256
@@ -67,6 +68,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	if (!nrl_load_terminfo()) {
 		return NULL;
 	}
+	nrl_dfa_build();
 
 	if (options->fd < 0) {
 		safe_assign(err, NRL_ERR_BAD_FD);

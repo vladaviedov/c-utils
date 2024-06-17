@@ -1,0 +1,24 @@
+/**
+ * @file dfa.h
+ * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
+ * @version 1.1
+ * @date 2024
+ * @license LGPLv3.0
+ * @brief Simplified DFA for escape sequences.
+ */
+#pragma once
+
+#include "terminfo.h"
+
+/**
+ * @brief Build a tree from terminfo data.
+ */
+void nrl_dfa_build(void);
+
+/**
+ * @brief Search tree for an escape sequence.
+ *
+ * @param[out] action - Buffer for escape sequence type.
+ * @return Whether action was found.
+ */
+int nrl_dfa_search(char (*nextch)(), terminfo_entry *action);

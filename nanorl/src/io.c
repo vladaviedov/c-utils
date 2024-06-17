@@ -25,7 +25,7 @@ static uint32_t rd_count = 0;
 static char wr_buf[BUF_SIZE];
 static uint32_t wr_count = 0;
 
-void nrl_io_set_fd(int fd) {
+void nrl_io_init(int fd) {
 	print_fd = fd;
 
 	// Reset buffers
@@ -33,9 +33,8 @@ void nrl_io_set_fd(int fd) {
 	wr_count = 0;
 }
 
-	// TODO: implement
 int nrl_io_read(nrl_input *buffer) {
-	return 0;
+
 }
 
 void nrl_io_write(const char *data, uint32_t length) {
