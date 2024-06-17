@@ -18,7 +18,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "printer.h"
+#include "io.h"
 #include "terminfo.h"
 
 // Line buffer options
@@ -72,7 +72,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		safe_assign(err, NRL_ERR_BAD_FD);
 		return NULL;
 	}
-	nrl_set_fd(options->fd);
+	nrl_io_init(options->fd);
 
 	// Setup terminal options
 	struct termios old_attr;
@@ -110,11 +110,11 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 	// Put terminal into application mode
 	// See: https://invisible-island.net/xterm/xterm.faq.html#xterm_arrows
-	nrl_write_esc(TI_KEYPAD_XMIT);
+	nrl_io_write_esc(TI_KEYPAD_XMIT);
 
 	// Print prompt:
-	nrl_write(options->prompt, strlen(options->prompt));
-	nrl_flush();
+	nrl_io_write(options->prompt, strlen(options->prompt));
+	nrl_io_flush();
 
 	// Input processing
 	char *line_buf = malloc(START_ALLOC * sizeof(char));
@@ -139,7 +139,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 				if (line_cursor > 0) {
 					line_cursor--;
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_write_esc(TI_CURSOR_LEFT);
+						nrl_io_write_esc(TI_CURSOR_LEFT);
 					}
 				}
 			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_RIGHT), res)
@@ -147,14 +147,14 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 				if (line_cursor < input_length) {
 					line_cursor++;
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_write_esc(TI_CURSOR_RIGHT);
+						nrl_io_write_esc(TI_CURSOR_RIGHT);
 					}
 				}
 			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_HOME), res)
 					   == 0) {
 				for (uint32_t i = line_cursor; i > 0; i--) {
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_write_esc(TI_CURSOR_LEFT);
+						nrl_io_write_esc(TI_CURSOR_LEFT);
 					}
 				}
 				line_cursor = 0;
@@ -162,13 +162,13 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 					   == 0) {
 				for (uint32_t i = line_cursor; i < input_length; i++) {
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_write_esc(TI_CURSOR_RIGHT);
+						nrl_io_write_esc(TI_CURSOR_RIGHT);
 					}
 				}
 				line_cursor = input_length;
 			}
 
-			nrl_flush();
+			nrl_io_flush();
 			continue;
 		}
 
@@ -180,7 +180,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 			unshift_str(line_buf, input_length, line_cursor - 1);
 			if (options->echo != NRL_ECHO_NO) {
-				nrl_write_esc(TI_CURSOR_LEFT);
+				nrl_io_write_esc(TI_CURSOR_LEFT);
 			}
 			line_buf[input_length - 1] = ' ';
 		} else {
@@ -205,15 +205,15 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		case NRL_ECHO_NO:
 			break;
 		case NRL_ECHO_YES:
-			nrl_write(redraw_start, redraw_length * sizeof(char));
+			nrl_io_write(redraw_start, redraw_length * sizeof(char));
 			break;
 		case NRL_ECHO_FAKE:
 			for (uint32_t i = 0; i < redraw_length - 1; i++) {
-				nrl_write(&options->echo_repl, sizeof(char));
+				nrl_io_write(&options->echo_repl, sizeof(char));
 			}
 
 			const char *final = backspace ? &whitespace : &options->echo_repl;
-			nrl_write(final, sizeof(char));
+			nrl_io_write(final, sizeof(char));
 			break;
 		}
 
@@ -224,10 +224,10 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 		if (options->echo != NRL_ECHO_NO) {
 			for (uint32_t i = 1; i < redraw_length + backspace; i++) {
-				nrl_write_esc(TI_CURSOR_LEFT);
+				nrl_io_write_esc(TI_CURSOR_LEFT);
 			}
 
-			nrl_flush();
+			nrl_io_flush();
 		}
 	}
 
@@ -248,12 +248,12 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	}
 
 	// Put terminal into local mode
-	nrl_write_esc(TI_KEYPAD_LOCAL);
+	nrl_io_write_esc(TI_KEYPAD_LOCAL);
 
 	// Write newline
 	char nl_buf = '\n';
-	nrl_write(&nl_buf, sizeof(char));
-	nrl_flush();
+	nrl_io_write(&nl_buf, sizeof(char));
+	nrl_io_flush();
 
 	// Resend signal to user
 	if (res < 0 && errno == EINTR) {
