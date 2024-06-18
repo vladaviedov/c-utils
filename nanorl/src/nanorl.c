@@ -26,9 +26,6 @@
 #define START_ALLOC 256
 #define FACTOR 2
 
-// Input (1 keystroke) buffer options
-#define INPUT_BUF_SIZE 16
-
 #define safe_assign(var_ptr, val)                                              \
 	if (var_ptr != NULL) {                                                     \
 		*var_ptr = val;                                                        \
@@ -37,8 +34,8 @@
 static int recvd_signal;
 static void sig_handler(int code);
 
-static void shift_str(char *array, uint32_t length, uint32_t index);
-static void unshift_str(char *array, uint32_t length, uint32_t index);
+static void shift_str(char *array, uint32_t length, uint32_t index, uint32_t count);
+static void unshift_str(char *array, uint32_t length, uint32_t index, uint32_t count);
 
 static char *noninteractive(int fd, nrl_error *err);
 
@@ -124,90 +121,116 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	uint32_t input_length = 0;
 	uint32_t line_cursor = 0;
 
-	ssize_t res;
-	char input_buf[INPUT_BUF_SIZE];
-	while ((res = read(options->fd, input_buf, sizeof(char) * INPUT_BUF_SIZE))
-		   > 0) {
-		if (input_buf[0] == '\n') {
+	nrl_input input;
+	input_type res;
+	while ((res = nrl_io_read(&input)) != INPUT_STOP) {
+		// Newline ends processing
+		if (res == INPUT_ASCII && input.ascii == '\n') {
 			break;
 		}
 
-		int backspace
-			= strncmp(input_buf, nrl_lookup_seq(TI_KEY_BACKSPACE), res) == 0;
+		int backspace = (res == INPUT_ESCAPE
+			&& input.escape == TI_KEY_BACKSPACE);
 
-		// Special inputs
-		if (!backspace && res > 1) {
-			if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_LEFT), res) == 0) {
+		if (res == INPUT_ESCAPE && !backspace) {
+			// Escape keys (non-backspace)
+			switch (input.escape) {
+			case TI_KEY_LEFT:
 				if (line_cursor > 0) {
 					line_cursor--;
 					if (options->echo != NRL_ECHO_NO) {
 						nrl_io_write_esc(TI_CURSOR_LEFT);
 					}
 				}
-			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_RIGHT), res)
-					   == 0) {
+				break;
+			case TI_KEY_RIGHT:
 				if (line_cursor < input_length) {
 					line_cursor++;
 					if (options->echo != NRL_ECHO_NO) {
 						nrl_io_write_esc(TI_CURSOR_RIGHT);
 					}
 				}
-			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_HOME), res)
-					   == 0) {
+				break;
+			case TI_KEY_HOME:
 				for (uint32_t i = line_cursor; i > 0; i--) {
 					if (options->echo != NRL_ECHO_NO) {
 						nrl_io_write_esc(TI_CURSOR_LEFT);
 					}
 				}
 				line_cursor = 0;
-			} else if (strncmp(input_buf, nrl_lookup_seq(TI_KEY_END), res)
-					   == 0) {
+				break;
+			case TI_KEY_END:
 				for (uint32_t i = line_cursor; i < input_length; i++) {
 					if (options->echo != NRL_ECHO_NO) {
 						nrl_io_write_esc(TI_CURSOR_RIGHT);
 					}
 				}
 				line_cursor = input_length;
+				break;
+			default:
+				break;
 			}
 
 			nrl_io_flush();
 			continue;
 		}
-
+		
+		uint32_t redraw_start;
+		uint32_t redraw_stop;
 		if (backspace) {
-			// Backspace input
+			// Backspace
 			if (line_cursor == 0) {
 				continue;
 			}
 
-			unshift_str(line_buf, input_length, line_cursor - 1);
+			unshift_str(line_buf, input_length, line_cursor - 1, 1);
 			if (options->echo != NRL_ECHO_NO) {
 				nrl_io_write_esc(TI_CURSOR_LEFT);
 			}
+
 			line_buf[input_length - 1] = ' ';
+			redraw_start = --line_cursor;
+			redraw_stop = input_length--;
 		} else {
-			// Standard inputs
-			if (input_length == alloc_length - 1) {
+			// Add characters to buffer
+			uint32_t chars_to_add = (res == INPUT_SPECIAL)
+				? strlen(input.special)
+				: 1;
+
+			// Need to increase buffer
+			if (input_length + chars_to_add > alloc_length) {
 				alloc_length *= FACTOR;
-				line_buf = realloc(line_buf, alloc_length);
+				line_buf = realloc(line_buf, alloc_length * sizeof(char));
 			}
 
+			// Shift characters
 			if (line_cursor != input_length) {
-				shift_str(line_buf, input_length, line_cursor);
+				shift_str(line_buf, input_length, line_cursor, chars_to_add);
 			}
-			line_buf[line_cursor] = input_buf[0];
-			input_length++;
-			line_cursor++;
+
+			// Add characters
+			if (res == INPUT_SPECIAL) {
+				memcpy(line_buf + line_cursor, input.special, chars_to_add);
+			} else {
+				line_buf[line_cursor] = input.ascii;
+			}
+
+			// TODO: cursor is 1 left of where it should be on special input
+			redraw_start = line_cursor;
+			line_cursor += chars_to_add;
+
+			input_length += chars_to_add;
+			redraw_stop = input_length;
 		}
 
 		// Redraw
-		char *redraw_start = line_buf + (line_cursor - 1);
-		uint32_t redraw_length = input_length - (line_cursor - 1);
+		uint32_t redraw_length = redraw_stop - redraw_start;
 		switch (options->echo) {
 		case NRL_ECHO_NO:
 			break;
 		case NRL_ECHO_YES:
-			nrl_io_write(redraw_start, redraw_length * sizeof(char));
+			nrl_io_write(line_buf + redraw_start,
+				redraw_length * sizeof(char));
 			break;
 		case NRL_ECHO_FAKE:
 			for (uint32_t i = 0; i < redraw_length - 1; i++) {
@@ -217,11 +240,6 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 			const char *final = backspace ? &whitespace : &options->echo_repl;
 			nrl_io_write(final, sizeof(char));
 			break;
-		}
-
-		if (backspace) {
-			input_length--;
-			line_cursor--;
 		}
 
 		if (options->echo != NRL_ECHO_NO) {
@@ -258,7 +276,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	nrl_io_flush();
 
 	// Resend signal to user
-	if (res < 0 && errno == EINTR) {
+	if (res == INPUT_STOP && errno == EINTR) {
 		raise(recvd_signal);
 	}
 
@@ -286,23 +304,25 @@ static void sig_handler(int code) {
  * @param[in,out] array - String.
  * @param[in] length - Current length of string.
  * @param[in] index - Index to insert into.
+ * @param[in] count - How many bytes to insert.
  */
-static void shift_str(char *array, uint32_t length, uint32_t index) {
-	for (uint32_t i = length; i > index; i--) {
-		array[i] = array[i - 1];
+static void shift_str(char *array, uint32_t length, uint32_t index, uint32_t count) {
+	for (uint32_t i = length + count - 1; i >= index + count; i--) {
+		array[i] = array[i - count];
 	}
 }
 
 /**
- * @brief Erase element in string, shifting elements back.
+ * @brief Erase elements in string, shifting elements back.
  *
  * @param[in,out] array - String.
  * @param[in] length - Current length of string.
  * @param[in] index - Index to erase.
+ * @param[in] count - How many bytes to erase.
  */
-static void unshift_str(char *array, uint32_t length, uint32_t index) {
-	for (uint32_t i = index; i < length; i++) {
-		array[i] = array[i + 1];
+static void unshift_str(char *array, uint32_t length, uint32_t index, uint32_t count) {
+	for (uint32_t i = index; i < length - count; i++) {
+		array[i] = array[i + count];
 	}
 }
 

@@ -12,17 +12,25 @@
 
 #include "terminfo.h"
 
+typedef enum {
+	INPUT_ASCII,
+	INPUT_ESCAPE,
+	INPUT_SPECIAL,
+	INPUT_STOP,
+} input_type;
+
 typedef union {
 	char ascii;
 	terminfo_entry escape;
+	const char *special;
 } nrl_input;
 
 /**
  * @brief Initialize IO buffers and set source.
  *
- * @param[in] fd - File descriptor.
+ * @param[in] fd_io - File descriptor.
  */
-void nrl_io_init(int fd);
+void nrl_io_init(int fd_io);
 
 /**
  * @brief Get the next character from input.
@@ -31,7 +39,7 @@ void nrl_io_init(int fd);
  * @return 0 if regular character, 1 if escape character.
  * @note Will block if not data in buffer.
  */
-int nrl_io_read(nrl_input *buffer);
+input_type nrl_io_read(nrl_input *buffer);
 
 /**
  * @brief Queue data to print.

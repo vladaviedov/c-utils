@@ -9,6 +9,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "dfa.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -60,7 +61,7 @@ void nrl_dfa_build(void) {
 	}
 }
 
-int nrl_dfa_search(char (*nextch)(), terminfo_entry *action) {
+int nrl_dfa_search(int (*nextch)(), terminfo_entry *action) {
 	dfa_node *current = &root;
 
 	// Tree is empty
@@ -68,23 +69,32 @@ int nrl_dfa_search(char (*nextch)(), terminfo_entry *action) {
 		return 0;
 	}
 	
-	char input;
-	while ((input = nextch()) != '\0') {
-		if (current->n_children == 0) {
-			*action = current->value.accept;
-			return 1;
-		}
-
+	int input;
+	while ((input = nextch()) != EOF && input != '\0') {
+		// Try to go to a child
 		for (uint32_t i = 0; i < current->n_children; i++) {
 			dfa_node *child = current->value.children + i;
 			if (child->edge == input) {
 				current = child;
-				break;
+
+				// Reached acceptor state
+				if (current->n_children == 0) {
+					*action = current->value.accept;
+					return 1;
+				}
+
+				// Have not
+				goto search_continue;
 			}
 		}
+
+		return 0;
+
+search_continue:
+		continue;
 	}
 
-	return 0;
+	return input == EOF ? -1 : 0;
 }
 
 static void dfa_insert(const char *sequence, terminfo_entry accept_value) {
@@ -104,7 +114,8 @@ static void dfa_insert(const char *sequence, terminfo_entry accept_value) {
 			}
 		}
 
-		current->value.children = realloc(current->value.children, current->n_children + 1);
+		current->value.children = realloc(current->value.children,
+			(current->n_children + 1) * sizeof(dfa_node));
 		dfa_node *child = current->value.children + current->n_children;
 		current->n_children++;
 
