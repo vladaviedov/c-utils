@@ -1,6 +1,6 @@
 # c-utils
 
-Collection of libraries providing utils for the C programming language.
+Collection of utility libraries for the C programming language.
 
 ## Dependencies
 
@@ -8,6 +8,19 @@ Collection of libraries providing utils for the C programming language.
 - Testing: `gtest`, C++ tool chain
 - Coverage: `lcov`
 - Documentation: `doxygen`
+
+## Targets
+
+The code and build system are written for Unix(-like) operating systems. Some
+libraries might work under different OSes or require special considerations.
+
+All code is C99, but some libraries might use POSIX or other extensions (see
+inner README files).
+
+My goal is for the code to work on:
+- Linux (Debian, Arch)
+- BSD (FreeBSD)
+- macOS
 
 ## Build
 
