@@ -9,9 +9,9 @@
 #define _POSIX_C_SOURCE 200809L
 #include "dfa.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 #include "terminfo.h"
 
@@ -59,7 +59,7 @@ int nrl_dfa_search(int (*nextch)(), terminfo_entry *action) {
 	if (current->n_children == 0) {
 		return 0;
 	}
-	
+
 	int input;
 	while ((input = nextch()) != EOF && input != '\0') {
 		// Try to go to a child
@@ -88,6 +88,12 @@ search_continue:
 	return input == EOF ? -1 : 0;
 }
 
+/**
+ * @brief Insert new sequence into the DFA tree.
+ *
+ * @param[in] sequence - Sequence to add.
+ * @param[in] accept_value - Output value on completed match.
+ */
 static void dfa_insert(const char *sequence, terminfo_entry accept_value) {
 	if (sequence == NULL) {
 		return;

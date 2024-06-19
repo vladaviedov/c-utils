@@ -9,15 +9,15 @@
 #define _POSIX_C_SOURCE 200809L
 #include "io.h"
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
-#include "terminfo.h"
 #include "dfa.h"
+#include "terminfo.h"
 
 #define BUF_SIZE 1024
 
@@ -50,7 +50,7 @@ input_type nrl_io_read(nrl_input *buffer) {
 	// Handle escape characters
 	int dfa_res = nrl_dfa_search(&io_nextchar, &buffer->escape);
 	if (dfa_res < 0) {
-		return INPUT_STOP; 
+		return INPUT_STOP;
 	}
 
 	if (dfa_res == 1) {
@@ -145,7 +145,7 @@ static int io_nextchar(void) {
 
 		rd_count += bytes;
 	}
-	
+
 	return rd_buf[rd_consumed + rd_pending++];
 }
 

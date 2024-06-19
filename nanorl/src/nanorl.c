@@ -18,9 +18,9 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "dfa.h"
 #include "io.h"
 #include "terminfo.h"
-#include "dfa.h"
 
 // Line buffer options
 #define START_ALLOC 256
@@ -34,8 +34,10 @@
 static int recvd_signal;
 static void sig_handler(int code);
 
-static void shift_str(char *array, uint32_t length, uint32_t index, uint32_t count);
-static void unshift_str(char *array, uint32_t length, uint32_t index, uint32_t count);
+static void shift_str(
+	char *array, uint32_t length, uint32_t index, uint32_t count);
+static void unshift_str(
+	char *array, uint32_t length, uint32_t index, uint32_t count);
 
 static const char whitespace = ' ';
 
@@ -124,8 +126,8 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 			break;
 		}
 
-		int backspace = (res == INPUT_ESCAPE
-			&& input.escape == TI_KEY_BACKSPACE);
+		int backspace
+			= (res == INPUT_ESCAPE && input.escape == TI_KEY_BACKSPACE);
 
 		if (res == INPUT_ESCAPE && !backspace) {
 			// Escape keys (non-backspace)
@@ -169,7 +171,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 			nrl_io_flush();
 			continue;
 		}
-		
+
 		uint32_t redraw_start;
 		uint32_t redraw_stop;
 		int32_t cursor_end_delta = 0;
@@ -191,9 +193,8 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 			cursor_end_delta = 0;
 		} else {
 			// Add characters to buffer
-			uint32_t chars_to_add = (res == INPUT_SPECIAL)
-				? strlen(input.special)
-				: 1;
+			uint32_t chars_to_add
+				= (res == INPUT_SPECIAL) ? strlen(input.special) : 1;
 
 			// Need to increase buffer
 			if (input_length + chars_to_add > alloc_length) {
@@ -228,8 +229,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		case NRL_ECHO_NO:
 			break;
 		case NRL_ECHO_YES:
-			nrl_io_write(line_buf + redraw_start,
-				redraw_length * sizeof(char));
+			nrl_io_write(line_buf + redraw_start, redraw_length * sizeof(char));
 			break;
 		case NRL_ECHO_FAKE:
 			for (uint32_t i = 0; i < redraw_length - 1; i++) {
@@ -300,14 +300,15 @@ static void sig_handler(int code) {
 }
 
 /**
- * @brief Insert element into string, shifting elements forward.
+ * @brief Insert elements into string, shifting elements forward.
  *
  * @param[in,out] array - String.
  * @param[in] length - Current length of string.
  * @param[in] index - Index to insert into.
  * @param[in] count - How many bytes to insert.
  */
-static void shift_str(char *array, uint32_t length, uint32_t index, uint32_t count) {
+static void shift_str(
+	char *array, uint32_t length, uint32_t index, uint32_t count) {
 	for (uint32_t i = length + count - 1; i >= index + count; i--) {
 		array[i] = array[i - count];
 	}
@@ -321,7 +322,8 @@ static void shift_str(char *array, uint32_t length, uint32_t index, uint32_t cou
  * @param[in] index - Index to erase.
  * @param[in] count - How many bytes to erase.
  */
-static void unshift_str(char *array, uint32_t length, uint32_t index, uint32_t count) {
+static void unshift_str(
+	char *array, uint32_t length, uint32_t index, uint32_t count) {
 	for (uint32_t i = index; i < length - count; i++) {
 		array[i] = array[i + count];
 	}
