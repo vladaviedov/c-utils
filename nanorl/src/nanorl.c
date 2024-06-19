@@ -37,8 +37,6 @@ static void sig_handler(int code);
 static void shift_str(char *array, uint32_t length, uint32_t index, uint32_t count);
 static void unshift_str(char *array, uint32_t length, uint32_t index, uint32_t count);
 
-static char *noninteractive(int fd, nrl_error *err);
-
 static const char whitespace = ' ';
 
 char *nanorl(const char *prompt, nrl_error *err) {
@@ -57,11 +55,6 @@ char *nanorl_fd(int fd, const char *prompt, nrl_error *err) {
 }
 
 char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
-	// Run alternative handling on non-terminals
-	if (!isatty(options->fd)) {
-		return noninteractive(options->fd, err);
-	}
-
 	if (!nrl_load_terminfo()) {
 		return NULL;
 	}
@@ -75,16 +68,18 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 	// Setup terminal options
 	struct termios old_attr;
-	if (tcgetattr(options->fd, &old_attr) < 0) {
-		safe_assign(err, NRL_ERR_SYS);
-		return NULL;
-	}
+	if (isatty(options->fd)) {
+		if (tcgetattr(options->fd, &old_attr) < 0) {
+			safe_assign(err, NRL_ERR_SYS);
+			return NULL;
+		}
 
-	struct termios new_attr = old_attr;
-	new_attr.c_lflag &= ~(ICANON | ECHO);
-	if (tcsetattr(options->fd, TCSAFLUSH, &new_attr) < 0) {
-		safe_assign(err, NRL_ERR_SYS);
-		return NULL;
+		struct termios new_attr = old_attr;
+		new_attr.c_lflag &= ~(ICANON | ECHO);
+		if (tcsetattr(options->fd, TCSAFLUSH, &new_attr) < 0) {
+			safe_assign(err, NRL_ERR_SYS);
+			return NULL;
+		}
 	}
 
 	// Setup signals
@@ -177,6 +172,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		
 		uint32_t redraw_start;
 		uint32_t redraw_stop;
+		int32_t cursor_end_delta = 0;
 		if (backspace) {
 			// Backspace
 			if (line_cursor == 0) {
@@ -191,6 +187,8 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 			line_buf[input_length - 1] = ' ';
 			redraw_start = --line_cursor;
 			redraw_stop = input_length--;
+			// -1 absolute, but 0 relative to the end
+			cursor_end_delta = 0;
 		} else {
 			// Add characters to buffer
 			uint32_t chars_to_add = (res == INPUT_SPECIAL)
@@ -215,12 +213,13 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 				line_buf[line_cursor] = input.ascii;
 			}
 
-			// TODO: cursor is 1 left of where it should be on special input
 			redraw_start = line_cursor;
 			line_cursor += chars_to_add;
 
 			input_length += chars_to_add;
 			redraw_stop = input_length;
+
+			cursor_end_delta = chars_to_add;
 		}
 
 		// Redraw
@@ -243,7 +242,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		}
 
 		if (options->echo != NRL_ECHO_NO) {
-			for (uint32_t i = 1; i < redraw_length + backspace; i++) {
+			for (uint32_t i = 0; i < (redraw_length - cursor_end_delta); i++) {
 				nrl_io_write_esc(TI_CURSOR_LEFT);
 			}
 
@@ -261,10 +260,12 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		return NULL;
 	}
 
-	if (tcsetattr(options->fd, TCSAFLUSH, &old_attr) < 0) {
-		safe_assign(err, NRL_ERR_SYS);
-		free(line_buf);
-		return NULL;
+	if (isatty(options->fd)) {
+		if (tcsetattr(options->fd, TCSAFLUSH, &old_attr) < 0) {
+			safe_assign(err, NRL_ERR_SYS);
+			free(line_buf);
+			return NULL;
+		}
 	}
 
 	// Put terminal into local mode
@@ -324,41 +325,4 @@ static void unshift_str(char *array, uint32_t length, uint32_t index, uint32_t c
 	for (uint32_t i = index; i < length - count; i++) {
 		array[i] = array[i + count];
 	}
-}
-
-/**
- * @brief Non-interactive input handling.
- *
- * @param[in] fd - Input file descriptor.
- * @param[out] err - Error code buffer.
- * @return Input string.
- */
-static char *noninteractive(int fd, nrl_error *err) {
-	char *line_buf = malloc(START_ALLOC * sizeof(char));
-	uint32_t alloc_length = START_ALLOC;
-	uint32_t input_length = 0;
-
-	ssize_t res;
-	char input_buf[START_ALLOC];
-	while ((res = read(fd, input_buf, sizeof(char) * START_ALLOC)) > 0) {
-		if (input_length + res > alloc_length - 1) {
-			alloc_length *= FACTOR;
-			line_buf = realloc(line_buf, alloc_length);
-		}
-
-		memcpy(line_buf + input_length, input_buf, res);
-		input_length += res;
-	}
-
-	if (input_length == 0) {
-		free(line_buf);
-		safe_assign(err, NRL_ERR_EMPTY);
-		return NULL;
-	}
-
-	// Null-terminate
-	line_buf[input_length - 1] = '\0';
-
-	safe_assign(err, NRL_ERR_OK);
-	return line_buf;
 }
