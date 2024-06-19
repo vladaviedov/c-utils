@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
 
 #include "terminfo.h"
 #include "dfa.h"
@@ -29,7 +31,8 @@ static uint32_t rd_pending = 0;
 static char wr_buf[BUF_SIZE];
 static uint32_t wr_count = 0;
 
-static int io_nextchar();
+static int io_nextchar(void);
+static void set_blocking_mode(int block);
 
 static const char *special_escape = "^[";
 
@@ -97,7 +100,7 @@ void nrl_io_flush(void) {
 	wr_count = 0;
 }
 
-static int io_nextchar() {
+static int io_nextchar(void) {
 	// No characters - read in data
 	if (rd_consumed == rd_count) {
 		ssize_t bytes = read(fd, rd_buf, BUF_SIZE);
@@ -110,10 +113,43 @@ static int io_nextchar() {
 		rd_pending = 0;
 	}
 
-	// TODO: handle when pending hits length properly
+	// We hit end of buffer, but not done with DFA parse
+	// Assume that a sequence is negligible in size, relative to the size of
+	// the buffer
 	if (rd_consumed + rd_pending == rd_count) {
-		return '\0';
+		// Move pending bits to the start of the array
+		if (rd_pending <= rd_consumed) {
+			memcpy(rd_buf, rd_buf + rd_consumed, rd_pending);
+		} else {
+			for (uint32_t i = 0; i < rd_pending; i++) {
+				rd_buf[i] = rd_buf[rd_consumed + i];
+			}
+		}
+
+		rd_count = rd_pending;
+		rd_consumed = 0;
+
+		// Read in more characters (but only if they are available)
+		set_blocking_mode(0);
+		ssize_t bytes = read(fd, rd_buf + rd_count, BUF_SIZE - rd_count);
+		if (bytes < 0) {
+			// If no input, that's fine
+			return (errno == EAGAIN || errno == EWOULDBLOCK) ? '\0' : EOF;
+		}
+		set_blocking_mode(1);
+
+		rd_count += bytes;
 	}
 	
 	return rd_buf[rd_consumed + rd_pending++];
+}
+
+static void set_blocking_mode(int block) {
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (block) {
+		flags &= ~O_NONBLOCK;
+	} else {
+		flags |= O_NONBLOCK;
+	}
+	fcntl(fd, F_SETFL, flags);
 }
