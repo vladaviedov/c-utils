@@ -30,15 +30,6 @@ typedef union {
 /**
  * @struct dfa_node
  * Node of the DFA tree.
- * 
- * @var dfa_node::edge
- * Transition value to get to this node.
- *
- * @var dfa_node::value
- * Value stored in the node.
- *
- * @var dfa_node::n_children
- * Children count. Used to distinguish node types.
  */
 struct dfa_node {
 	char edge;

@@ -100,6 +100,11 @@ void nrl_io_flush(void) {
 	wr_count = 0;
 }
 
+/**
+ * @brief Get next character from input buffer.
+ *
+ * @return ASCII char if available, '\0' if no input and EOF on error.
+ */
 static int io_nextchar(void) {
 	// No characters - read in data
 	if (rd_consumed == rd_count) {
@@ -144,6 +149,11 @@ static int io_nextchar(void) {
 	return rd_buf[rd_consumed + rd_pending++];
 }
 
+/**
+ * @brief Set terminal blocking mode on reads.
+ *
+ * @param[in] block - To block or not to block.
+ */
 static void set_blocking_mode(int block) {
 	int flags = fcntl(fd, F_GETFL, 0);
 	if (block) {

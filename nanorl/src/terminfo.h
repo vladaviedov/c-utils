@@ -1,7 +1,7 @@
 /**
  * @file terminfo.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.0
+ * @version 1.1
  * @date 2024
  * @license LGPLv3.0
  * @brief Terminfo finder and parser.
@@ -13,15 +13,18 @@
  * Internal identifiers for terminfo string entries.
  */
 typedef enum {
+	// Output sequences
 	TI_CURSOR_LEFT = 0,
 	TI_CURSOR_RIGHT,
 	TI_KEYPAD_LOCAL,
 	TI_KEYPAD_XMIT,
+	// Input sequences
 	TI_KEY_LEFT,
 	TI_KEY_RIGHT,
 	TI_KEY_BACKSPACE,
 	TI_KEY_HOME,
 	TI_KEY_END,
+	// Length hack
 	TI_ENTRY_COUNT,
 } terminfo_entry;
 
