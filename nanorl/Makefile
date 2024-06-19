@@ -1,8 +1,9 @@
 CFLAGS += -I./include
 OBJECTS=$(BUILD)/obj/nanorl_nanorl.o \
 		$(BUILD)/obj/nanorl_terminfo.o \
-		$(BUILD)/obj/nanorl_printer.o \
-		$(BUILD)/obj/nanorl_fastload.o
+		$(BUILD)/obj/nanorl_io.o \
+		$(BUILD)/obj/nanorl_fastload.o \
+		$(BUILD)/obj/nanorl_dfa.o
 
 .PHONY: all
 all: headers $(LIB_TARGET)
@@ -16,10 +17,13 @@ $(BUILD)/obj/nanorl_nanorl.o: src/nanorl.c src/terminfo.h
 $(BUILD)/obj/nanorl_terminfo.o: src/terminfo.c src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/obj/nanorl_printer.o: src/printer.c src/printer.h src/terminfo.h
+$(BUILD)/obj/nanorl_io.o: src/io.c src/io.h src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/obj/nanorl_fastload.o: src/fastload.c src/fastload.h src/terminfo.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/obj/nanorl_dfa.o: src/dfa.c src/dfa.h src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: headers

@@ -27,6 +27,14 @@ List of configuration macros located in `config.h`.
 
 ## Changelog
 
+- 1.1
+```
+Rework of input acquisition
+Unused escape sequences are printed in a readable format
+Improved support for non-tty input
+
+Fixed: Pasted text is now processed
+```
 - 1.0
 ```
 First release
