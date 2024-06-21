@@ -126,10 +126,12 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 			break;
 		}
 
-		int backspace
-			= (res == INPUT_ESCAPE && input.escape == TII_KEY_BACKSPACE);
+		uint32_t redraw_start;
+		uint32_t redraw_stop;
+		int32_t cursor_end_delta = 0;
+		int removal = 0;
 
-		if (res == INPUT_ESCAPE && !backspace) {
+		if (res == INPUT_ESCAPE) {
 			// Escape keys (non-backspace)
 			switch (input.escape) {
 			case TII_KEY_LEFT:
@@ -164,33 +166,50 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 				}
 				line_cursor = input_length;
 				break;
+			case TII_KEY_BACKSPACE:
+				if (line_cursor == 0) {
+					continue;
+				}
+
+				unshift_str(line_buf, input_length, line_cursor - 1, 1);
+				if (options->echo != NRL_ECHO_NO) {
+					nrl_io_write_esc(TIO_CURSOR_LEFT);
+				}
+
+				line_buf[input_length - 1] = ' ';
+				redraw_start = --line_cursor;
+				redraw_stop = input_length--;
+				// -1 absolute, but 0 relative to the end
+				cursor_end_delta = 0;
+				removal = 1;
+				break;
+			case TII_KEY_DELETE:
+				if (line_cursor == input_length) {
+					continue;
+				}
+
+				unshift_str(line_buf, input_length, line_cursor, 1);
+
+				line_buf[input_length - 1] = ' ';
+				redraw_start = line_cursor;
+				redraw_stop = input_length--;
+				// -1 absolute, but 0 relative to the end
+				cursor_end_delta = 0;
+				removal = 1;
+				break;
 			default:
 				break;
 			}
 
-			nrl_io_flush();
-			continue;
-		}
-
-		uint32_t redraw_start;
-		uint32_t redraw_stop;
-		int32_t cursor_end_delta = 0;
-		if (backspace) {
-			// Backspace
-			if (line_cursor == 0) {
+			// We want to redraw for some, but exit for others
+			switch (input.escape) {
+			case TII_KEY_BACKSPACE: // fallthrough
+			case TII_KEY_DELETE:
+				break;
+			default:
+				nrl_io_flush();
 				continue;
 			}
-
-			unshift_str(line_buf, input_length, line_cursor - 1, 1);
-			if (options->echo != NRL_ECHO_NO) {
-				nrl_io_write_esc(TIO_CURSOR_LEFT);
-			}
-
-			line_buf[input_length - 1] = ' ';
-			redraw_start = --line_cursor;
-			redraw_stop = input_length--;
-			// -1 absolute, but 0 relative to the end
-			cursor_end_delta = 0;
 		} else {
 			// Add characters to buffer
 			uint32_t chars_to_add
@@ -236,7 +255,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 				nrl_io_write(&options->echo_repl, sizeof(char));
 			}
 
-			const char *final = backspace ? &whitespace : &options->echo_repl;
+			const char *final = removal ? &whitespace : &options->echo_repl;
 			nrl_io_write(final, sizeof(char));
 			break;
 		}
