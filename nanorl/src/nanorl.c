@@ -106,7 +106,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 	// Put terminal into application mode
 	// See: https://invisible-island.net/xterm/xterm.faq.html#xterm_arrows
-	nrl_io_write_esc(TI_KEYPAD_XMIT);
+	nrl_io_write_esc(TIO_KEYPAD_XMIT);
 
 	// Print prompt:
 	nrl_io_write(options->prompt, strlen(options->prompt));
@@ -127,39 +127,39 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 		}
 
 		int backspace
-			= (res == INPUT_ESCAPE && input.escape == TI_KEY_BACKSPACE);
+			= (res == INPUT_ESCAPE && input.escape == TII_KEY_BACKSPACE);
 
 		if (res == INPUT_ESCAPE && !backspace) {
 			// Escape keys (non-backspace)
 			switch (input.escape) {
-			case TI_KEY_LEFT:
+			case TII_KEY_LEFT:
 				if (line_cursor > 0) {
 					line_cursor--;
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_io_write_esc(TI_CURSOR_LEFT);
+						nrl_io_write_esc(TIO_CURSOR_LEFT);
 					}
 				}
 				break;
-			case TI_KEY_RIGHT:
+			case TII_KEY_RIGHT:
 				if (line_cursor < input_length) {
 					line_cursor++;
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_io_write_esc(TI_CURSOR_RIGHT);
+						nrl_io_write_esc(TIO_CURSOR_RIGHT);
 					}
 				}
 				break;
-			case TI_KEY_HOME:
+			case TII_KEY_HOME:
 				for (uint32_t i = line_cursor; i > 0; i--) {
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_io_write_esc(TI_CURSOR_LEFT);
+						nrl_io_write_esc(TIO_CURSOR_LEFT);
 					}
 				}
 				line_cursor = 0;
 				break;
-			case TI_KEY_END:
+			case TII_KEY_END:
 				for (uint32_t i = line_cursor; i < input_length; i++) {
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_io_write_esc(TI_CURSOR_RIGHT);
+						nrl_io_write_esc(TIO_CURSOR_RIGHT);
 					}
 				}
 				line_cursor = input_length;
@@ -183,7 +183,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 			unshift_str(line_buf, input_length, line_cursor - 1, 1);
 			if (options->echo != NRL_ECHO_NO) {
-				nrl_io_write_esc(TI_CURSOR_LEFT);
+				nrl_io_write_esc(TIO_CURSOR_LEFT);
 			}
 
 			line_buf[input_length - 1] = ' ';
@@ -243,7 +243,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 		if (options->echo != NRL_ECHO_NO) {
 			for (uint32_t i = 0; i < (redraw_length - cursor_end_delta); i++) {
-				nrl_io_write_esc(TI_CURSOR_LEFT);
+				nrl_io_write_esc(TIO_CURSOR_LEFT);
 			}
 
 			nrl_io_flush();
@@ -269,7 +269,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	}
 
 	// Put terminal into local mode
-	nrl_io_write_esc(TI_KEYPAD_LOCAL);
+	nrl_io_write_esc(TIO_KEYPAD_LOCAL);
 
 	// Write newline
 	char nl_buf = '\n';

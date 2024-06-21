@@ -33,22 +33,26 @@ static const char *db_path[] = {
 
 // Reference: ncurses <term.h> lists these
 // It would be nice to have a better reference
-static const uint8_t offsets[] = {
-	14u,  // cursor_left
-	17u,  // cursor_right
+static const uint8_t input_offsets[] = {
 	79u,  // key_left
 	83u,  // key_right
 	55u,  // key_backspace
 	76u,  // key_home
 	164u, // key_end
-	88u,  // keypad_local
-	89u,  // keypad_xmit
+	77u,  // key_ic (insert)
+	59u,  // key_dc (delete)
 };
-static const uint32_t offsets_len = sizeof(offsets) / sizeof(uint8_t);
+static const uint8_t output_offsets[] = {
+	14u, // cursor_left
+	17u, // cursor_right
+	88u, // keypad_local
+	89u, // keypad_xmit
+};
 
 static int is_loaded = 0;
 static char *strings_table = NULL;
-static const char *cache[TI_ENTRY_COUNT] = { NULL };
+static const char *inputs[TII_COUNT] = { NULL };
+static const char *outputs[TIO_COUNT] = { NULL };
 
 static FILE *find_terminfo(const char *term);
 static FILE *try_open(const char *ti_path, const char *term);
@@ -68,7 +72,7 @@ int nrl_load_terminfo(void) {
 #if ENABLE_FASTLOAD == 1
 	// Fastload xterm-based terminals
 	if (strstr(term, "xterm") != NULL) {
-		nrl_fl_xterm(cache);
+		nrl_fl_xterm(inputs, outputs);
 		is_loaded = 1;
 		return 1;
 	}
@@ -83,8 +87,12 @@ int nrl_load_terminfo(void) {
 	return parse(terminfo);
 }
 
-const char *nrl_lookup_seq(terminfo_entry name) {
-	return cache[name];
+const char *nrl_lookup_input(terminfo_input name) {
+	return inputs[name];
+}
+
+const char *nrl_lookup_output(terminfo_output name) {
+	return outputs[name];
 }
 
 static FILE *find_terminfo(const char *term) {
@@ -201,16 +209,25 @@ static int parse(FILE *terminfo) {
 	strings_table = malloc(header[5]);
 	fread(strings_table, 1, header[5], terminfo);
 
-	// Look up all capabilities needed
+	// Look up all input capabilities needed
 	int ret_code = 1;
-	for (uint32_t i = 0; i < offsets_len; i++) {
-		uint8_t index = offsets[i];
+	for (uint32_t i = 0; i < TII_COUNT; i++) {
+		uint8_t index = input_offsets[i];
 		int16_t offset = strings[index];
 		if (offset == -1) {
 			ret_code = 2;
 		}
 
-		cache[i] = strings_table + offset;
+		inputs[i] = strings_table + offset;
+	}
+	for (uint32_t i = 0; i < TIO_COUNT; i++) {
+		uint8_t index = output_offsets[i];
+		int16_t offset = strings[index];
+		if (offset == -1) {
+			ret_code = 2;
+		}
+
+		outputs[i] = strings_table + offset;
 	}
 
 	fclose(terminfo);

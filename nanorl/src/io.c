@@ -86,8 +86,8 @@ void nrl_io_write(const char *data, uint32_t length) {
 	wr_count += length;
 }
 
-void nrl_io_write_esc(terminfo_entry sequence) {
-	const char *as_text = nrl_lookup_seq(sequence);
+void nrl_io_write_esc(terminfo_output sequence) {
+	const char *as_text = nrl_lookup_output(sequence);
 	nrl_io_write(as_text, strlen(as_text));
 }
 

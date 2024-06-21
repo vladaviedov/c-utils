@@ -14,7 +14,8 @@
 /**
  * @brief Load 'xterm' configuration.
  *
- * @param[out] - Cache to fill.
+ * @param[out] inputs - Input storage to fill.
+ * @param[out] outputs - Output storage to fill.
  */
-void nrl_fl_xterm(const char **cache);
+void nrl_fl_xterm(const char **inputs, const char **outputs);
 #endif

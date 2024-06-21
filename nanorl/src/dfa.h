@@ -22,4 +22,4 @@ void nrl_dfa_build(void);
  * @param[out] action - Buffer for escape sequence type.
  * @return Whether action was found. -1 on EOF received.
  */
-int nrl_dfa_search(int (*nextch)(), terminfo_entry *action);
+int nrl_dfa_search(int (*nextch)(), terminfo_input *action);
