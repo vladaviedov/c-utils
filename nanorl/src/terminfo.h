@@ -20,6 +20,7 @@ typedef enum {
 	TII_KEY_END,
 	TII_KEY_DELETE,
 } terminfo_input;
+
 #define TII_COUNT 6
 
 /**
@@ -32,6 +33,7 @@ typedef enum {
 	TIO_KEYPAD_LOCAL,
 	TIO_KEYPAD_XMIT,
 } terminfo_output;
+
 #define TIO_COUNT 4
 
 /**
