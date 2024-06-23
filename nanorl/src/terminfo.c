@@ -23,10 +23,18 @@
 
 // Reference: man terminfo
 static const char *db_path[] = {
+	// Most common location used by:
+	// Archlinux, OpenBSD, DragonFlyBSD, macOS
 	"/usr/share/terminfo",
-#if DEBIAN == 1
+#if DEBIAN_DIRS == 1
 	"/etc/terminfo",
 	"/lib/terminfo",
+#endif
+#if FREEBSD_DIRS == 1
+	"/usr/share/etc/terminfo",
+#endif
+#if NETBSD_DIRS == 1
+	"/usr/share/misc/terminfo",
 #endif
 	NULL,
 };

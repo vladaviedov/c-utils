@@ -23,7 +23,9 @@ List of configuration macros located in `config.h`.
 |Macro|Description|Default|
 |---|---|---|
 |DEBIAN_DIRS|Include Debian-specific terminfo locations|1|
-|ENABLE_FASTLOAD|Builtin terminfo data for popular terminals (xterm)|1|
+|FREEBSD_DIRS|Include FreeBSD-specific terminfo locations|1|
+|NETBSD_DIRS|Include NetBSD-specific terminfo locations|1|
+|ENABLE_FASTLOAD|Built-in terminfo data for popular terminals (xterm)|1|
 
 ## Changelog
 
