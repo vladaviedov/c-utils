@@ -1,7 +1,7 @@
 /**
  * @file nanorl.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Small and simple line editing library.
@@ -85,7 +85,6 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	}
 
 	// Setup signals
-	// TODO: need more signals?
 	struct sigaction old_sighup_sa;
 	struct sigaction old_sigint_sa;
 	struct sigaction old_sigterm_sa;

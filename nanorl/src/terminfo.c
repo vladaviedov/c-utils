@@ -1,7 +1,7 @@
 /**
  * @file terminfo.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Terminfo finder and parser.
@@ -47,7 +47,6 @@ static const uint8_t input_offsets[] = {
 	55u,  // key_backspace
 	76u,  // key_home
 	164u, // key_end
-	77u,  // key_ic (insert)
 	59u,  // key_dc (delete)
 };
 static const uint8_t output_offsets[] = {

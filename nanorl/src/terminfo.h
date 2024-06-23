@@ -1,7 +1,7 @@
 /**
  * @file terminfo.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Terminfo finder and parser.
@@ -18,10 +18,9 @@ typedef enum {
 	TII_KEY_BACKSPACE,
 	TII_KEY_HOME,
 	TII_KEY_END,
-	TII_KEY_INSERT,
 	TII_KEY_DELETE,
 } terminfo_input;
-#define TII_COUNT 7
+#define TII_COUNT 6
 
 /**
  * @enum terminfo_output
