@@ -10,10 +10,11 @@ editor-specific options.
 - Standard text input
 - Backspace
 - Arrow navigation
-- Home & End keys
-- Non-interactive mode (e.g. reading from a pipe)
+- Home, End, Delete keys
+- Input from a pipe
+- Input obfuscation (option)
 
-`nanorl` is written for POSIX, but relies on the curses terminfo database,
+`nanorl` is written for POSIX 2008 and relies on the curses terminfo database,
 although not the library itself.
 
 ## Configuration
@@ -29,6 +30,13 @@ List of configuration macros located in `config.h`.
 
 ## Changelog
 
+- 1.2
+```
+Support deleting with the 'Delete' key
+More database paths (FreeBSD, NetBSD)
+
+Fixed: DEBIAN_DIRS is now used in the code instead of DEBIAN
+```
 - 1.1
 ```
 Rework of input acquisition
