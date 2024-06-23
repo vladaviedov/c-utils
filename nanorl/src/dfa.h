@@ -1,7 +1,7 @@
 /**
  * @file dfa.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Simplified DFA for escape sequences.
@@ -22,4 +22,4 @@ void nrl_dfa_build(void);
  * @param[out] action - Buffer for escape sequence type.
  * @return Whether action was found. -1 on EOF received.
  */
-int nrl_dfa_search(int (*nextch)(), terminfo_entry *action);
+int nrl_dfa_search(int (*nextch)(), terminfo_input *action);

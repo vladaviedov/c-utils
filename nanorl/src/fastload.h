@@ -1,7 +1,7 @@
 /**
  * @file fastload.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Terminfo stubs for common terminals.
@@ -14,7 +14,8 @@
 /**
  * @brief Load 'xterm' configuration.
  *
- * @param[out] - Cache to fill.
+ * @param[out] inputs - Input storage to fill.
+ * @param[out] outputs - Output storage to fill.
  */
-void nrl_fl_xterm(const char **cache);
+void nrl_fl_xterm(const char **inputs, const char **outputs);
 #endif

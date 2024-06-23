@@ -1,7 +1,7 @@
 /**
  * @file io.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Input and output processing.
@@ -21,7 +21,7 @@ typedef enum {
 
 typedef union {
 	char ascii;
-	terminfo_entry escape;
+	terminfo_input escape;
 	const char *special;
 } nrl_input;
 
@@ -56,7 +56,7 @@ void nrl_io_write(const char *data, uint32_t length);
  * @param[in] sequence - Escape sequence identifier.
  * @note Will flush on buffer fill.
  */
-void nrl_io_write_esc(terminfo_entry sequence);
+void nrl_io_write_esc(terminfo_output sequence);
 
 /**
  * @brief Flush buffer to output.

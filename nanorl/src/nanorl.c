@@ -1,7 +1,7 @@
 /**
  * @file nanorl.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Small and simple line editing library.
@@ -85,7 +85,6 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	}
 
 	// Setup signals
-	// TODO: need more signals?
 	struct sigaction old_sighup_sa;
 	struct sigaction old_sigint_sa;
 	struct sigaction old_sigterm_sa;
@@ -106,7 +105,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 
 	// Put terminal into application mode
 	// See: https://invisible-island.net/xterm/xterm.faq.html#xterm_arrows
-	nrl_io_write_esc(TI_KEYPAD_XMIT);
+	nrl_io_write_esc(TIO_KEYPAD_XMIT);
 
 	// Print prompt:
 	nrl_io_write(options->prompt, strlen(options->prompt));
@@ -126,71 +125,90 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 			break;
 		}
 
-		int backspace
-			= (res == INPUT_ESCAPE && input.escape == TI_KEY_BACKSPACE);
+		uint32_t redraw_start;
+		uint32_t redraw_stop;
+		int32_t cursor_end_delta = 0;
+		int removal = 0;
 
-		if (res == INPUT_ESCAPE && !backspace) {
+		if (res == INPUT_ESCAPE) {
 			// Escape keys (non-backspace)
 			switch (input.escape) {
-			case TI_KEY_LEFT:
+			case TII_KEY_LEFT:
 				if (line_cursor > 0) {
 					line_cursor--;
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_io_write_esc(TI_CURSOR_LEFT);
+						nrl_io_write_esc(TIO_CURSOR_LEFT);
 					}
 				}
 				break;
-			case TI_KEY_RIGHT:
+			case TII_KEY_RIGHT:
 				if (line_cursor < input_length) {
 					line_cursor++;
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_io_write_esc(TI_CURSOR_RIGHT);
+						nrl_io_write_esc(TIO_CURSOR_RIGHT);
 					}
 				}
 				break;
-			case TI_KEY_HOME:
+			case TII_KEY_HOME:
 				for (uint32_t i = line_cursor; i > 0; i--) {
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_io_write_esc(TI_CURSOR_LEFT);
+						nrl_io_write_esc(TIO_CURSOR_LEFT);
 					}
 				}
 				line_cursor = 0;
 				break;
-			case TI_KEY_END:
+			case TII_KEY_END:
 				for (uint32_t i = line_cursor; i < input_length; i++) {
 					if (options->echo != NRL_ECHO_NO) {
-						nrl_io_write_esc(TI_CURSOR_RIGHT);
+						nrl_io_write_esc(TIO_CURSOR_RIGHT);
 					}
 				}
 				line_cursor = input_length;
+				break;
+			case TII_KEY_BACKSPACE:
+				if (line_cursor == 0) {
+					continue;
+				}
+
+				unshift_str(line_buf, input_length, line_cursor - 1, 1);
+				if (options->echo != NRL_ECHO_NO) {
+					nrl_io_write_esc(TIO_CURSOR_LEFT);
+				}
+
+				line_buf[input_length - 1] = ' ';
+				redraw_start = --line_cursor;
+				redraw_stop = input_length--;
+				// -1 absolute, but 0 relative to the end
+				cursor_end_delta = 0;
+				removal = 1;
+				break;
+			case TII_KEY_DELETE:
+				if (line_cursor == input_length) {
+					continue;
+				}
+
+				unshift_str(line_buf, input_length, line_cursor, 1);
+
+				line_buf[input_length - 1] = ' ';
+				redraw_start = line_cursor;
+				redraw_stop = input_length--;
+				// -1 absolute, but 0 relative to the end
+				cursor_end_delta = 0;
+				removal = 1;
 				break;
 			default:
 				break;
 			}
 
-			nrl_io_flush();
-			continue;
-		}
-
-		uint32_t redraw_start;
-		uint32_t redraw_stop;
-		int32_t cursor_end_delta = 0;
-		if (backspace) {
-			// Backspace
-			if (line_cursor == 0) {
+			// We want to redraw for some, but exit for others
+			switch (input.escape) {
+			case TII_KEY_BACKSPACE: // fallthrough
+			case TII_KEY_DELETE:
+				break;
+			default:
+				nrl_io_flush();
 				continue;
 			}
-
-			unshift_str(line_buf, input_length, line_cursor - 1, 1);
-			if (options->echo != NRL_ECHO_NO) {
-				nrl_io_write_esc(TI_CURSOR_LEFT);
-			}
-
-			line_buf[input_length - 1] = ' ';
-			redraw_start = --line_cursor;
-			redraw_stop = input_length--;
-			// -1 absolute, but 0 relative to the end
-			cursor_end_delta = 0;
 		} else {
 			// Add characters to buffer
 			uint32_t chars_to_add
@@ -236,14 +254,14 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 				nrl_io_write(&options->echo_repl, sizeof(char));
 			}
 
-			const char *final = backspace ? &whitespace : &options->echo_repl;
+			const char *final = removal ? &whitespace : &options->echo_repl;
 			nrl_io_write(final, sizeof(char));
 			break;
 		}
 
 		if (options->echo != NRL_ECHO_NO) {
 			for (uint32_t i = 0; i < (redraw_length - cursor_end_delta); i++) {
-				nrl_io_write_esc(TI_CURSOR_LEFT);
+				nrl_io_write_esc(TIO_CURSOR_LEFT);
 			}
 
 			nrl_io_flush();
@@ -269,7 +287,7 @@ char *nanorl_opts(const nrl_opts *options, nrl_error *err) {
 	}
 
 	// Put terminal into local mode
-	nrl_io_write_esc(TI_KEYPAD_LOCAL);
+	nrl_io_write_esc(TIO_KEYPAD_LOCAL);
 
 	// Write newline
 	char nl_buf = '\n';

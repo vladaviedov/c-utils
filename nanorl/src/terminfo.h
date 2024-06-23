@@ -1,7 +1,7 @@
 /**
  * @file terminfo.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Terminfo finder and parser.
@@ -9,24 +9,32 @@
 #pragma once
 
 /**
- * @enum terminfo_entry
- * Internal identifiers for terminfo string entries.
+ * @enum terminfo_output
+ * Internal identifiers for terminfo input sequences.
  */
 typedef enum {
-	// Output sequences
-	TI_CURSOR_LEFT = 0,
-	TI_CURSOR_RIGHT,
-	TI_KEYPAD_LOCAL,
-	TI_KEYPAD_XMIT,
-	// Input sequences
-	TI_KEY_LEFT,
-	TI_KEY_RIGHT,
-	TI_KEY_BACKSPACE,
-	TI_KEY_HOME,
-	TI_KEY_END,
-	// Length hack
-	TI_ENTRY_COUNT,
-} terminfo_entry;
+	TII_KEY_LEFT,
+	TII_KEY_RIGHT,
+	TII_KEY_BACKSPACE,
+	TII_KEY_HOME,
+	TII_KEY_END,
+	TII_KEY_DELETE,
+} terminfo_input;
+
+#define TII_COUNT 6
+
+/**
+ * @enum terminfo_output
+ * Internal identifiers for terminfo output sequences.
+ */
+typedef enum {
+	TIO_CURSOR_LEFT,
+	TIO_CURSOR_RIGHT,
+	TIO_KEYPAD_LOCAL,
+	TIO_KEYPAD_XMIT,
+} terminfo_output;
+
+#define TIO_COUNT 4
 
 /**
  * @brief Find and parse terminfo file for user's terminal.
@@ -36,10 +44,19 @@ typedef enum {
 int nrl_load_terminfo(void);
 
 /**
- * @brief Get printable string for escape sequence.
+ * @brief Get printable string for input escape sequence.
  *
  * @param[in] name - Interal identifier.
- * @return Printable, null-terminated string.
+ * @return ASCII representation, null-terminated string.
  * @note Should not be called before nrl_load_terminfo.
  */
-const char *nrl_lookup_seq(terminfo_entry name);
+const char *nrl_lookup_input(terminfo_input name);
+
+/**
+ * @brief Get printable string for output escape sequence.
+ *
+ * @param[in] name - Interal identifier.
+ * @return ASCII representation, null-terminated string.
+ * @note Should not be called before nrl_load_terminfo.
+ */
+const char *nrl_lookup_output(terminfo_output name);

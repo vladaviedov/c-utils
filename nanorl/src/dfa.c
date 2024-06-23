@@ -1,7 +1,7 @@
 /**
  * @file dfa.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Simplified DFA for escape sequences.
@@ -24,7 +24,7 @@ typedef struct dfa_node dfa_node;
  */
 typedef union {
 	dfa_node *children;
-	terminfo_entry accept;
+	terminfo_input accept;
 } dfa_value;
 
 /**
@@ -44,15 +44,15 @@ static dfa_node root = {
 	.n_children = 0,
 };
 
-static void dfa_insert(const char *sequence, terminfo_entry accept_value);
+static void dfa_insert(const char *sequence, terminfo_input accept_value);
 
 void nrl_dfa_build(void) {
-	for (terminfo_entry i = TI_KEY_LEFT; i < TI_ENTRY_COUNT; i++) {
-		dfa_insert(nrl_lookup_seq(i), i);
+	for (uint32_t i = 0; i < TII_COUNT; i++) {
+		dfa_insert(nrl_lookup_input(i), i);
 	}
 }
 
-int nrl_dfa_search(int (*nextch)(), terminfo_entry *action) {
+int nrl_dfa_search(int (*nextch)(), terminfo_input *action) {
 	dfa_node *current = &root;
 
 	// Tree is empty
@@ -94,7 +94,7 @@ search_continue:
  * @param[in] sequence - Sequence to add.
  * @param[in] accept_value - Output value on completed match.
  */
-static void dfa_insert(const char *sequence, terminfo_entry accept_value) {
+static void dfa_insert(const char *sequence, terminfo_input accept_value) {
 	if (sequence == NULL) {
 		return;
 	}
