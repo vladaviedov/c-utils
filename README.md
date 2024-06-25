@@ -27,6 +27,19 @@ My goal is for the code to work on:
 Edit `build.conf` to select which components of the library should be built and
 `make`.
 
+### Older Versions
+
+Switch to older versions of libraries (for building) using the `version.sh`
+script.
+```
+./version.sh <library> <version|"latest">
+```
+
+Reset back to latest with (instead of `git reset`):
+```
+./version.sh reset
+```
+
 ### Output
 
 - Static library - `build/lib/libutils.a`
