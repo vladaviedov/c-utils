@@ -7,6 +7,11 @@ and void pointers to accomodate any data type.
 
 ## Changelog
 
+- 1.1r
+```
+Re-tag with build system updates
+```
+
 - 1.1
 ```
 New library function: vec_collect

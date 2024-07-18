@@ -7,6 +7,11 @@ pointers to accomodate any data type.
 
 ## Changelog
 
+- 1.0r
+```
+Re-tag with build system updates
+```
+
 - 1.0
 ```
 First release
