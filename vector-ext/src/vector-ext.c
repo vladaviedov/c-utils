@@ -39,7 +39,7 @@ vector_status vec_bulk_push(vector *vec, const void *items, uint32_t count) {
 }
 
 vector_status vec_bulk_insert(
-	vector *vec, uint32_t index, const void *value, uint32_t count) {
+	vector *vec, uint32_t index, const void *items, uint32_t count) {
 	if (vec == NULL) {
 		return VECTOR_STATUS_NULL;
 	}
@@ -68,7 +68,7 @@ vector_status vec_bulk_insert(
 	}
 
 	// Place element
-	memcpy(ptr_at(vec, index), value, vec->_type_size * count);
+	memcpy(ptr_at(vec, index), items, vec->_type_size * count);
 	vec->count += count;
 
 	return VECTOR_STATUS_OK;
