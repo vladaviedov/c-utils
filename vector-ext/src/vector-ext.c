@@ -20,23 +20,15 @@
 // Pointer arithmetic for elements
 #define ptr_at(vec, index) (vec->data + vec->_type_size * index)
 
+static uint32_t new_alloc_size(const vector *vec, uint32_t more_count);
+
 vector_status vec_bulk_push(vector *vec, const void *items, uint32_t count) {
 	if (vec == NULL) {
 		return VECTOR_STATUS_NULL;
 	}
 
-	// Exponentially grow until new elements can fit
-	uint32_t old_alloc = vec->_alloc_count;
-	while (vec->count < vec->_alloc_count + count) {
-		// clang-format off
-		vec->_alloc_count = (vec->data == NULL)
-			? FACTOR
-			: vec->_alloc_count * FACTOR;
-		// clang-format on
-	}
-	if (vec->_alloc_count > old_alloc) {
-		vec_reserve(vec, vec->_alloc_count);
-	}
+	// Reserve more space
+	vec_reserve(vec, new_alloc_size(vec, count));
 
 	// Copy elements
 	void *push_ptr = ptr_at(vec, vec->count);
@@ -51,22 +43,12 @@ vector_status vec_bulk_insert(vector *vec, uint32_t index, const void *value, ui
 		return VECTOR_STATUS_NULL;
 	}
 
-	if (index >= vec->count) {
+	if (index > vec->count) {
 		return VECTOR_STATUS_BOUNDS;
 	}
 
-	// Exponentially grow until new elements can fit
-	uint32_t old_alloc = vec->_alloc_count;
-	while (vec->count < vec->_alloc_count + count) {
-		// clang-format off
-		vec->_alloc_count = (vec->data == NULL)
-			? FACTOR
-			: vec->_alloc_count * FACTOR;
-		// clang-format on
-	}
-	if (vec->_alloc_count > old_alloc) {
-		vec_reserve(vec, vec->_alloc_count);
-	}
+	// Reserve more space
+	vec_reserve(vec, new_alloc_size(vec, count));
 
 	// Move elements forwards
 	uint32_t move_to = vec->count + count - 1;
@@ -75,7 +57,10 @@ vector_status vec_bulk_insert(vector *vec, uint32_t index, const void *value, ui
 		uint32_t remaining = move_to - last_insert_index;
 		uint32_t copy_count = (remaining >= count) ? count : remaining;
 
-		memcpy(ptr_at(vec, move_to), ptr_at(vec, move_to - count), vec->_type_size * copy_count);
+		// Offset to front of copy frame
+		uint32_t offset = copy_count - 1;
+
+		memcpy(ptr_at(vec, move_to - offset), ptr_at(vec, move_to - count - offset), vec->_type_size * copy_count);
 		move_to -= copy_count;
 	}
 
@@ -113,4 +98,20 @@ vector_status vec_bulk_erase(vector *vec, uint32_t index, void *buffer, uint32_t
 	vec->count -= count;
 
 	return VECTOR_STATUS_OK;
+}
+
+/**
+ * @brief Calculate new allocation size.
+ *
+ * @param[in] vec - Vector object.
+ * @param[in] more_count - How many more elements should fit.
+ * @return New allocation size.
+ */
+static uint32_t new_alloc_size(const vector *vec, uint32_t more_count) {
+	uint32_t alloc = vec->_alloc_count;
+	while (vec->count + more_count > alloc) {
+		alloc = (alloc == 0) ? FACTOR : alloc * FACTOR;
+	}
+
+	return alloc;
 }
