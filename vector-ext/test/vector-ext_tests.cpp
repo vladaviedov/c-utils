@@ -1,5 +1,6 @@
 extern "C" {
 #include <c-utils/vector.h>
+
 #include "../include/vector-ext.h"
 }
 

@@ -38,7 +38,8 @@ vector_status vec_bulk_push(vector *vec, const void *items, uint32_t count) {
 	return VECTOR_STATUS_OK;
 }
 
-vector_status vec_bulk_insert(vector *vec, uint32_t index, const void *value, uint32_t count) {
+vector_status vec_bulk_insert(
+	vector *vec, uint32_t index, const void *value, uint32_t count) {
 	if (vec == NULL) {
 		return VECTOR_STATUS_NULL;
 	}
@@ -60,7 +61,9 @@ vector_status vec_bulk_insert(vector *vec, uint32_t index, const void *value, ui
 		// Offset to front of copy frame
 		uint32_t offset = copy_count - 1;
 
-		memcpy(ptr_at(vec, move_to - offset), ptr_at(vec, move_to - count - offset), vec->_type_size * copy_count);
+		memcpy(ptr_at(vec, move_to - offset),
+			ptr_at(vec, move_to - count - offset),
+			vec->_type_size * copy_count);
 		move_to -= copy_count;
 	}
 
@@ -71,7 +74,8 @@ vector_status vec_bulk_insert(vector *vec, uint32_t index, const void *value, ui
 	return VECTOR_STATUS_OK;
 }
 
-vector_status vec_bulk_erase(vector *vec, uint32_t index, void *buffer, uint32_t count) {
+vector_status vec_bulk_erase(
+	vector *vec, uint32_t index, void *buffer, uint32_t count) {
 	if (vec == NULL) {
 		return VECTOR_STATUS_NULL;
 	}
@@ -91,7 +95,8 @@ vector_status vec_bulk_erase(vector *vec, uint32_t index, void *buffer, uint32_t
 		uint32_t remaining = vec->count - move_from;
 		uint32_t copy_count = (remaining >= count) ? count : remaining;
 
-		memcpy(ptr_at(vec, move_from - count), ptr_at(vec, move_from), vec->_type_size * copy_count);
+		memcpy(ptr_at(vec, move_from - count), ptr_at(vec, move_from),
+			vec->_type_size * copy_count);
 		move_from += copy_count;
 	}
 

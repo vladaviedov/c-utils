@@ -29,7 +29,8 @@ vector_status vec_bulk_push(vector *vec, const void *items, uint32_t count);
  * @param[in] count - Count of elements to insert.
  * @return Status code.
  */
-vector_status vec_bulk_insert(vector *vec, uint32_t index, const void *items, uint32_t count);
+vector_status vec_bulk_insert(
+	vector *vec, uint32_t index, const void *items, uint32_t count);
 
 /**
  * @brief Remove multiple elements at specified location.
@@ -40,4 +41,5 @@ vector_status vec_bulk_insert(vector *vec, uint32_t index, const void *items, ui
  * @param[in] count - Count of elements to remove.
  * @return Status code.
  */
-vector_status vec_bulk_erase(vector *vec, uint32_t index, void *buffer, uint32_t count);
+vector_status vec_bulk_erase(
+	vector *vec, uint32_t index, void *buffer, uint32_t count);
