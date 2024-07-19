@@ -17,13 +17,13 @@ TEST_OBJECTS=
 DOC_DIRS=
 EXAMPLES=
 
-.PHONY: debug
-debug: CFLAGS += $(CFLAGS_DEBUG)
-debug: dirs $(TARGET)
-
 .PHONY: release
 release: CFLAGS += $(CFLAGS_RELEASE)
 release: dirs $(TARGET)
+
+.PHONY: debug
+debug: CFLAGS += $(CFLAGS_DEBUG)
+debug: dirs $(TARGET)
 
 # make_sublib(target_name)
 define make_sublib
@@ -64,6 +64,11 @@ include $(CONFIG_PATH)
 ifeq ($(vector),1)
 $(eval $(call make_sublib,vector))
 $(eval $(call make_sublib_test,vector))
+endif
+
+ifeq ($(vector-ext),1)
+$(eval $(call make_sublib,vector-ext))
+$(eval $(call make_sublib_test,vector-ext))
 endif
 
 ifeq ($(stack),1)
@@ -132,6 +137,7 @@ export FORMAT_CHECK_FLAGS=--dry-run --Werror
 export FORMAT_FIX_FLAGS=-i
 FORMAT_DIRS=\
 	vector \
+	vector-ext \
 	stack \
 	nanorl
 
