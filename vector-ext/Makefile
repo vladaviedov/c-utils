@@ -6,7 +6,7 @@ all: headers $(LIB_TARGET)
 $(LIB_TARGET): $(BUILD)/obj/vector-ext_vector-ext.o
 	$(AR) $(ARFLAGS) $@ $^
 
-$(BUILD)/obj/vector-ext_vector.o: src/vector-ext.c include/vector-ext.h
+$(BUILD)/obj/vector-ext_vector-ext.o: src/vector-ext.c include/vector-ext.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: headers
