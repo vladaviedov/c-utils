@@ -9,6 +9,10 @@ static char element0 = '0';
 static char element1 = '1';
 static char element2 = '2';
 
+static int int_element0 = 123;
+static int int_element1 = 456;
+static int int_element2 = 789;
+
 TEST(Vector, VecInitOk) {
 	vector vec = vec_init(sizeof(char));
 
@@ -205,6 +209,44 @@ TEST(Vector, VecInsertOk) {
 	EXPECT_EQ(*((char *)vec.data + 1), element1);
 	EXPECT_EQ(*((char *)vec.data + 2), element0);
 	EXPECT_EQ(*((char *)vec.data + 3), element1);
+
+	free(vec.data);
+}
+
+TEST(Vector, VecInsertOkMultibyte) {
+	vector vec = {
+		.data = nullptr,
+		.count = 0,
+		._type_size = sizeof(int),
+		._alloc_count = 0,
+	};
+
+	EXPECT_EQ(vec_insert(&vec, 0, &int_element0), VECTOR_STATUS_OK);
+	EXPECT_NE(vec.data, nullptr);
+	EXPECT_EQ(*((int *)vec.data), int_element0);
+	EXPECT_EQ(vec.count, 1);
+
+	EXPECT_EQ(vec_insert(&vec, 1, &int_element1), VECTOR_STATUS_OK);
+	EXPECT_EQ(*((int *)vec.data + 1), int_element1);
+	EXPECT_EQ(vec.count, 2);
+
+	EXPECT_EQ(vec_insert(&vec, 0, &int_element2), VECTOR_STATUS_OK);
+	EXPECT_EQ(*((int *)vec.data), int_element2);
+	EXPECT_EQ(vec.count, 3);
+
+	// Verify other elements
+	EXPECT_EQ(*((int *)vec.data + 1), int_element0);
+	EXPECT_EQ(*((int *)vec.data + 2), int_element1);
+
+	EXPECT_EQ(vec_insert(&vec, 1, &int_element1), VECTOR_STATUS_OK);
+	EXPECT_EQ(*((int *)vec.data + 1), int_element1);
+	EXPECT_EQ(vec.count, 4);
+
+	// Verify other elements
+	EXPECT_EQ(*((int *)vec.data), int_element2);
+	EXPECT_EQ(*((int *)vec.data + 1), int_element1);
+	EXPECT_EQ(*((int *)vec.data + 2), int_element0);
+	EXPECT_EQ(*((int *)vec.data + 3), int_element1);
 
 	free(vec.data);
 }

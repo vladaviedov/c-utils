@@ -7,6 +7,11 @@ and void pointers to accomodate any data type.
 
 ## Changelog
 
+- 1.1.1
+```
+Fixed: vec_insert, vec_erase now works properly with multibyte types
+```
+
 - 1.1r
 ```
 Re-tag with build system updates

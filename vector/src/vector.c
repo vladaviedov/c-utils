@@ -1,7 +1,7 @@
 /**
  * @file vector.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1
+ * @version 1.1.1
  * @date 2024
  * @license LGPLv3.0
  * @brief Abstract vector.
@@ -17,7 +17,7 @@
 #define FACTOR 2
 
 // Pointer arithmetic for elements
-#define ptr_at(vec, index) (vec->data + vec->_type_size * index)
+#define ptr_at(vec, index) (vec->data + vec->_type_size * (index))
 
 vector vec_init(size_t type_size) {
 	vector vec = {
