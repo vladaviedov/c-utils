@@ -1,7 +1,7 @@
 /**
  * @file stack.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.0
+ * @version 1.0.1
  * @date 2024
  * @license LGPLv3.0
  * @brief Abstract stack.
@@ -16,7 +16,7 @@
 #define FACTOR 2
 
 // Pointer arithmetic for elements
-#define ptr_at(st, index) (st->_data + st->_type_size * index)
+#define ptr_at(st, index) (st->_data + st->_type_size * (index))
 
 stack stack_init(size_t type_size) {
 	stack st = {

@@ -216,6 +216,37 @@ TEST(Stack, StackPopOk) {
 	free(st._data);
 }
 
+TEST(Stack, StackPopOkMultibyte) {
+	stack st = {
+		.count = 3,
+		._data = malloc(sizeof(int) * 3),
+		._type_size = sizeof(int),
+		._alloc_count = 3,
+	};
+
+	*((int *)st._data) = element0;
+	*((int *)st._data + 1) = element1;
+	*((int *)st._data + 2) = element2;
+
+	int buffer = 123;
+	EXPECT_EQ(stack_pop(&st, &buffer), STACK_STATUS_OK);
+	EXPECT_EQ(buffer, element2);
+	EXPECT_EQ(st.count, 2);
+
+	// Verify elements
+	EXPECT_EQ(*((int *)st._data), element0);
+	EXPECT_EQ(*((int *)st._data + 1), element1);
+
+	EXPECT_EQ(stack_pop(&st, &buffer), STACK_STATUS_OK);
+	EXPECT_EQ(buffer, element1);
+	EXPECT_EQ(st.count, 1);
+
+	// Verify elements
+	EXPECT_EQ(*((int *)st._data), element0);
+
+	free(st._data);
+}
+
 TEST(Stack, StackPeekNull) {
 	stack *st = nullptr;
 
