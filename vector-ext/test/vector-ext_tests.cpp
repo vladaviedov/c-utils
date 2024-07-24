@@ -14,6 +14,9 @@ static char element2 = '2';
 static char elements0[] = { element0, element1, element2 };
 static char elements1[] = { element2, element0, element1 };
 
+static int int_elements0[] = { element0, element1, element2 };
+static int int_elements1[] = { element2, element0, element1 };
+
 TEST(VectorExt, VecBulkPushNull) {
 	vector *vec = nullptr;
 
@@ -95,6 +98,35 @@ TEST(VectorExt, VecBulkInsertOk) {
 	EXPECT_EQ(*((char *)vec.data + 3), element0);
 	EXPECT_EQ(*((char *)vec.data + 4), element1);
 	EXPECT_EQ(*((char *)vec.data + 5), element2);
+
+	free(vec.data);
+}
+
+TEST(VectorExt, VecBulkInsertOkMultibyte) {
+	vector vec = {
+		.data = nullptr,
+		.count = 0,
+		._type_size = sizeof(int),
+		._alloc_count = 0,
+	};
+
+	EXPECT_EQ(vec_bulk_insert(&vec, 0, int_elements0, 3), VECTOR_STATUS_OK);
+	EXPECT_NE(vec.data, nullptr);
+	EXPECT_EQ(*((int *)vec.data), element0);
+	EXPECT_EQ(*((int *)vec.data + 1), element1);
+	EXPECT_EQ(*((int *)vec.data + 2), element2);
+	EXPECT_EQ(vec.count, 3);
+
+	EXPECT_EQ(vec_bulk_insert(&vec, 0, int_elements1, 3), VECTOR_STATUS_OK);
+	EXPECT_EQ(*((int *)vec.data), element2);
+	EXPECT_EQ(*((int *)vec.data + 1), element0);
+	EXPECT_EQ(*((int *)vec.data + 2), element1);
+	EXPECT_EQ(vec.count, 6);
+
+	// Verify other elements
+	EXPECT_EQ(*((int *)vec.data + 3), element0);
+	EXPECT_EQ(*((int *)vec.data + 4), element1);
+	EXPECT_EQ(*((int *)vec.data + 5), element2);
 
 	free(vec.data);
 }

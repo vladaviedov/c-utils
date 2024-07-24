@@ -1,7 +1,7 @@
 /**
  * @file vector-ext.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.0
+ * @version 1.0.1
  * @date 2024
  * @license LGPLv3.0
  * @brief Vector extension functions.
@@ -18,7 +18,7 @@
 #define FACTOR 2
 
 // Pointer arithmetic for elements
-#define ptr_at(vec, index) (vec->data + vec->_type_size * index)
+#define ptr_at(vec, index) (vec->data + vec->_type_size * (index))
 
 static uint32_t new_alloc_size(const vector *vec, uint32_t more_count);
 
