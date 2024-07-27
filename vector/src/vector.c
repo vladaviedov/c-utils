@@ -1,7 +1,7 @@
 /**
  * @file vector.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Abstract vector.
@@ -32,13 +32,45 @@ vector vec_init(size_t type_size) {
 
 vector *vec_new(size_t type_size) {
 	vector *vec = malloc(sizeof(vector));
-
 	vec->data = NULL;
 	vec->_type_size = type_size;
 	vec->count = 0;
 	vec->_alloc_count = 0;
 
 	return vec;
+}
+
+vector vec_init_clone(const vector *vec) {
+	uint32_t data_size = vec->_type_size * vec->count;
+	if (data_size == 0) {
+		return vec_init(vec->_type_size);
+	}
+
+	vector cloned_vec = {
+		.data = malloc(data_size),
+		._type_size = vec->_type_size,
+		.count = vec->count,
+		._alloc_count = vec->count,
+	};
+
+	memcpy(cloned_vec.data, vec->data, data_size);
+	return cloned_vec;
+}
+
+vector *vec_new_clone(const vector *vec) {
+	uint32_t data_size = vec->_type_size * vec->count;
+	if (data_size == 0) {
+		return vec_new(vec->_type_size);
+	}
+
+	vector *cloned_vec = malloc(sizeof(vector));
+	cloned_vec->data = malloc(data_size);
+	cloned_vec->_type_size = vec->_type_size;
+	cloned_vec->count = vec->count;
+	cloned_vec->_alloc_count = vec->count;
+
+	memcpy(cloned_vec->data, vec->data, data_size);
+	return cloned_vec;
 }
 
 vector_status vec_deinit(vector *vec) {

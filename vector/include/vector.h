@@ -1,7 +1,7 @@
 /**
  * @file vector.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.1.1
+ * @version 1.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Abstract vector.
@@ -73,6 +73,22 @@ vector vec_init(size_t type_size);
  * @note Delete with vec_delete.
  */
 vector *vec_new(size_t type_size);
+
+/**
+ * @brief Clone a vector object on the stack.
+ *
+ * @param[in] vec - Original vector.
+ * @return Cloned vector.
+ */
+vector vec_init_clone(const vector *vec);
+
+/**
+ * @brief Clone a vector object on the heap.
+ *
+ * @param[in] vec - Original vector.
+ * @return Cloned vector.
+ */
+vector *vec_new_clone(const vector *vec);
 
 /**
  * @brief Delete vector object from the stack.

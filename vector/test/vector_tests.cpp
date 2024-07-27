@@ -30,6 +30,65 @@ TEST(Vector, VecNewOk) {
 	free(vec);
 }
 
+TEST(Vector, VecInitCloneOk) {
+	char orig_data[] = { element0, element1, element2 };
+
+	vector vec = {
+		.data = orig_data,
+		.count = 3,
+		._type_size = sizeof(char),
+		._alloc_count = 3,
+	};
+
+	vector cloned_vec = vec_init_clone(&vec);
+
+	// Make sure that data pointer was cloned
+	EXPECT_NE(cloned_vec.data, nullptr);
+	EXPECT_NE(cloned_vec.data, vec.data);
+
+	// Check copied params
+	EXPECT_EQ(cloned_vec.count, vec.count);
+	EXPECT_EQ(cloned_vec._type_size, vec._type_size);
+	EXPECT_EQ(cloned_vec._alloc_count, vec._alloc_count);
+
+	// Check copied elements
+	EXPECT_EQ(*((char *)cloned_vec.data), element0);
+	EXPECT_EQ(*((char *)cloned_vec.data + 1), element1);
+	EXPECT_EQ(*((char *)cloned_vec.data + 2), element2);
+
+	free(cloned_vec.data);
+}
+
+TEST(Vector, VecNewCloneOk) {
+	char orig_data[] = { element0, element1, element2 };
+
+	vector vec = {
+		.data = orig_data,
+		.count = 3,
+		._type_size = sizeof(char),
+		._alloc_count = 3,
+	};
+
+	vector *cloned_vec = vec_new_clone(&vec);
+
+	// Make sure that data pointer was cloned
+	EXPECT_NE(cloned_vec->data, nullptr);
+	EXPECT_NE(cloned_vec->data, vec.data);
+
+	// Check copied params
+	EXPECT_EQ(cloned_vec->count, vec.count);
+	EXPECT_EQ(cloned_vec->_type_size, vec._type_size);
+	EXPECT_EQ(cloned_vec->_alloc_count, vec._alloc_count);
+
+	// Check copied elements
+	EXPECT_EQ(*((char *)cloned_vec->data), element0);
+	EXPECT_EQ(*((char *)cloned_vec->data + 1), element1);
+	EXPECT_EQ(*((char *)cloned_vec->data + 2), element2);
+
+	free(cloned_vec->data);
+	free(cloned_vec);
+}
+
 TEST(Vector, VecDeinitNullArg) {
 	vector *vec = nullptr;
 
