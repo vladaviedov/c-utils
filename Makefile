@@ -8,7 +8,18 @@ CFLAGS_DEBUG=-Wall -Wextra -g
 export AR=ar
 export ARFLAGS=rvcS
 
+CONFIG_PATH=build.conf
 TARGET=$(BUILD)/lib/libutils.a
+BUILD_DIRS=$(BUILD) \
+		   $(BUILD)/obj \
+		   $(BUILD)/objd \
+		   $(BUILD)/lib \
+		   $(BUILD)/bin \
+		   $(BUILD)/include/c-utils \
+		   $(BUILD)/test
+
+# Release objects by default
+export OBJ_DIR=$(BUILD)/obj
 
 COMPONENTS=
 OBJECTS=
@@ -19,11 +30,12 @@ EXAMPLES=
 
 .PHONY: release
 release: CFLAGS += $(CFLAGS_RELEASE)
-release: dirs $(TARGET)
+release: $(BUILD_DIRS) $(TARGET)
 
 .PHONY: debug
 debug: CFLAGS += $(CFLAGS_DEBUG)
-debug: dirs $(TARGET)
+debug: OBJ_DIR = $(BUILD)/objd
+debug: $(BUILD_DIRS) $(TARGET)
 
 # make_sublib(target_name)
 define make_sublib
@@ -39,12 +51,12 @@ endef
 # make_sublib_test(target_name)
 define make_sublib_test
 TEST_COMPONENTS += $(1)_tests
-TEST_OBJECTS += $(BUILD)/obj/$(1)_tests.o
+TEST_OBJECTS += $(BUILD)/objd/$(1)_tests.o
 
 .PHONY: $(1)_tests
 $(1)_tests:
 	$(MAKE) -C $(1) test \
-		TEST_TARGET=$(BUILD)/obj/$(1)_tests.o
+		TEST_TARGET=$(BUILD)/objd/$(1)_tests.o
 endef
 
 # make_sublib_example(target_name)
@@ -57,8 +69,17 @@ $(BUILD)/bin/$(1)_example:
 		BIN_TARGET=$(BUILD)/bin/$(1)_example
 endef
 
+# make_build_dir(dir_name)
+define make_build_dir
+$(1):
+	mkdir -p $$@
+endef
+
+# Build directory rules
+$(foreach build_dir, $(BUILD_DIRS), \
+	$(eval $(call make_build_dir,$(build_dir))))
+
 # Configuration
-CONFIG_PATH=build.conf
 include $(CONFIG_PATH)
 
 ifeq ($(vector),1)
@@ -82,19 +103,9 @@ $(eval $(call make_sublib_example,nanorl))
 endif
 
 # Build
-.PHONY: dirs
-dirs:
-	mkdir -p $(BUILD)
-	mkdir -p $(BUILD)/lib
-	mkdir -p $(BUILD)/obj
-	mkdir -p $(BUILD)/include/c-utils
-	mkdir -p $(BUILD)/test
-	mkdir -p $(BUILD)/bin
-
-.PHONY: $(TARGET)
 $(TARGET): $(OBJECTS)
 	rm -f $(TARGET)
-	./repack.sh $(BUILD) $@ $^
+	./repack.sh $(OBJ_DIR) $@ $^
 
 .PHONY: clean
 clean:
@@ -122,7 +133,8 @@ coverage:
 	lcov --no-external --capture --initial -d . -o $(COV_DIR)/report_base.info
 	$(MAKE) test
 	lcov --no-external --capture -d $(shell pwd) -o $(COV_DIR)/report_aux.info
-	lcov -a $(COV_DIR)/report_base.info -a $(COV_DIR)/report_aux.info -o $(COV_DIR)/report.info
+	lcov -a $(COV_DIR)/report_base.info -a $(COV_DIR)/report_aux.info \
+		-o $(COV_DIR)/report.info
 	genhtml $(COV_DIR)/report.info -o $(COV_DIR)
 
 # Examples

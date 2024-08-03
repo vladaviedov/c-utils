@@ -1,34 +1,33 @@
 CFLAGS += -I./include
-OBJECTS=$(BUILD)/obj/nanorl_nanorl.o \
-		$(BUILD)/obj/nanorl_terminfo.o \
-		$(BUILD)/obj/nanorl_io.o \
-		$(BUILD)/obj/nanorl_fastload.o \
-		$(BUILD)/obj/nanorl_dfa.o
+OBJECTS=$(OBJ_DIR)/nanorl_nanorl.o \
+		$(OBJ_DIR)/nanorl_terminfo.o \
+		$(OBJ_DIR)/nanorl_io.o \
+		$(OBJ_DIR)/nanorl_fastload.o \
+		$(OBJ_DIR)/nanorl_dfa.o
 
 .PHONY: all
-all: headers $(LIB_TARGET)
+all: $(BUILD)/include/c-utils/nanorl.h $(LIB_TARGET)
 
 $(LIB_TARGET): $(OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(BUILD)/obj/nanorl_nanorl.o: src/nanorl.c src/terminfo.h
+$(OBJ_DIR)/nanorl_nanorl.o: src/nanorl.c src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/obj/nanorl_terminfo.o: src/terminfo.c src/terminfo.h
+$(OBJ_DIR)/nanorl_terminfo.o: src/terminfo.c src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/obj/nanorl_io.o: src/io.c src/io.h src/terminfo.h
+$(OBJ_DIR)/nanorl_io.o: src/io.c src/io.h src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/obj/nanorl_fastload.o: src/fastload.c src/fastload.h src/terminfo.h
+$(OBJ_DIR)/nanorl_fastload.o: src/fastload.c src/fastload.h src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/obj/nanorl_dfa.o: src/dfa.c src/dfa.h src/terminfo.h
+$(OBJ_DIR)/nanorl_dfa.o: src/dfa.c src/dfa.h src/terminfo.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-.PHONY: headers
-headers:
-	cp -r include/** $(BUILD)/include/c-utils
+$(BUILD)/include/c-utils/nanorl.h: include/nanorl.h
+	cp -v $^ $@
 
 # Example
 .PHONY: example

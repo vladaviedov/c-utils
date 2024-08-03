@@ -1,17 +1,16 @@
 CFLAGS += -I./include
 
 .PHONY: all
-all: headers $(LIB_TARGET)
+all: $(BUILD)/include/c-utils/vector.h $(LIB_TARGET)
 
-$(LIB_TARGET): $(BUILD)/obj/vector_vector.o
+$(LIB_TARGET): $(OBJ_DIR)/vector_vector.o
 	$(AR) $(ARFLAGS) $@ $^
 
-$(BUILD)/obj/vector_vector.o: src/vector.c include/vector.h
+$(OBJ_DIR)/vector_vector.o: src/vector.c include/vector.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-.PHONY: headers
-headers:
-	cp -r include/** $(BUILD)/include/c-utils
+$(BUILD)/include/c-utils/vector.h: include/vector.h
+	cp -v $^ $@
 
 # Test
 .PHONY: test

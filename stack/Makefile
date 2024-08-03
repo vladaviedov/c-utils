@@ -1,17 +1,16 @@
 CFLAGS += -I./include
 
 .PHONY: all
-all: headers $(LIB_TARGET)
+all: $(BUILD)/include/c-utils/stack.h $(LIB_TARGET)
 
-$(LIB_TARGET): $(BUILD)/obj/stack_stack.o
+$(LIB_TARGET): $(OBJ_DIR)/stack_stack.o
 	$(AR) $(ARFLAGS) $@ $^
 
-$(BUILD)/obj/stack_stack.o: src/stack.c include/stack.h
+$(OBJ_DIR)/stack_stack.o: src/stack.c include/stack.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-.PHONY: headers
-headers:
-	cp -r include/** $(BUILD)/include/c-utils
+$(BUILD)/include/c-utils/stack.h: include/stack.h
+	cp -v $^ $@
 
 # Test
 .PHONY: test
