@@ -7,6 +7,12 @@ and void pointers to accomodate any data type.
 
 ## Changelog
 
+- 1.2r
+```
+Re-tag with build system updates
+No debug builds prior to this version
+```
+
 - 1.2
 ```
 New library functions: vec_init_clone, vec_new_clone

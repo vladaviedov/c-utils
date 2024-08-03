@@ -30,6 +30,12 @@ List of configuration macros located in `config.h`.
 
 ## Changelog
 
+- 1.2r
+```
+Re-tag with build system updates
+No debug builds prior to this version
+```
+
 - 1.2
 ```
 Support deleting with the 'Delete' key

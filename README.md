@@ -40,6 +40,8 @@ Reset back to latest with (instead of `git reset`):
 ./version.sh reset
 ```
 
+For special notes about this see [here](./VERSION.md)
+
 ### Output
 
 - Static library - `build/lib/libutils.a`
