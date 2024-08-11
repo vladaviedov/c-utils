@@ -138,5 +138,12 @@ static int io_nextchar(void) {
 		rd_count += bytes;
 	}
 
-	return rd_buf[rd_consumed + rd_pending++];
+	char next_char = rd_buf[rd_consumed + rd_pending++];
+
+	// Ctrl+D / EOF
+	if (next_char == '\4') {
+		return EOF;
+	}
+
+	return next_char;
 }
