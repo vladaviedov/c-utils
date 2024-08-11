@@ -32,7 +32,6 @@ static char wr_buf[BUF_SIZE];
 static uint32_t wr_count = 0;
 
 static int io_nextchar(void);
-static void set_blocking_mode(int block);
 
 static const char *special_escape = "^[";
 
@@ -135,31 +134,9 @@ static int io_nextchar(void) {
 		rd_consumed = 0;
 
 		// Read in more characters (but only if they are available)
-		set_blocking_mode(0);
 		ssize_t bytes = read(fd, rd_buf + rd_count, BUF_SIZE - rd_count);
-		if (bytes < 0) {
-			// If no input, that's fine
-			return (errno == EAGAIN || errno == EWOULDBLOCK) ? '\0' : EOF;
-		}
-		set_blocking_mode(1);
-
 		rd_count += bytes;
 	}
 
 	return rd_buf[rd_consumed + rd_pending++];
-}
-
-/**
- * @brief Set terminal blocking mode on reads.
- *
- * @param[in] block - To block or not to block.
- */
-static void set_blocking_mode(int block) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (block) {
-		flags &= ~O_NONBLOCK;
-	} else {
-		flags |= O_NONBLOCK;
-	}
-	fcntl(fd, F_SETFL, flags);
 }
