@@ -1,7 +1,7 @@
 /**
  * @file terminfo.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.2
+ * @version 1.2.1
  * @date 2024
  * @license LGPLv3.0
  * @brief Terminfo finder and parser.
