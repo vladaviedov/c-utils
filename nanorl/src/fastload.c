@@ -25,7 +25,7 @@ static const char *xterm_inputs_stub[TII_COUNT] = {
 static const char *xterm_outputs_stub[TIO_COUNT] = {
 	"\b",
 	"\033[C",
-	"\033[?1h\033>",
+	"\033[?1l\033>",
 	"\033[?1h\033=",
 };
 
