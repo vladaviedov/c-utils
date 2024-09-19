@@ -225,7 +225,12 @@ static int parse(FILE *terminfo) {
 			ret_code = 2;
 		}
 
-		inputs[i] = strings_table + offset;
+		char *value = strings_table + offset;
+		if (value == NULL || strlen(value) == 0) {
+			inputs[i] = NULL;
+		} else {
+			inputs[i] = value;
+		}
 	}
 	for (uint32_t i = 0; i < TIO_COUNT; i++) {
 		uint8_t index = output_offsets[i];
@@ -234,7 +239,12 @@ static int parse(FILE *terminfo) {
 			ret_code = 2;
 		}
 
-		outputs[i] = strings_table + offset;
+		char *value = strings_table + offset;
+		if (value == NULL || strlen(value) == 0) {
+			outputs[i] = NULL;
+		} else {
+			outputs[i] = value;
+		}
 	}
 
 	fclose(terminfo);
