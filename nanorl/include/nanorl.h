@@ -1,7 +1,7 @@
 /**
  * @file nanorl.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.2.1
+ * @version 1.2.2
  * @date 2024
  * @license LGPLv3.0
  * @brief Small and simple line editing library.
@@ -11,7 +11,7 @@
 /**
  * Library version.
  */
-#define NRL_LIB_VER "1.2.1"
+#define NRL_LIB_VER "1.2.2"
 
 /**
  * @enum nrl_error
