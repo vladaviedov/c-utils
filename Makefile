@@ -102,6 +102,11 @@ $(eval $(call make_sublib,nanorl))
 $(eval $(call make_sublib_example,nanorl))
 endif
 
+ifeq ($(unicode),1)
+$(eval $(call make_sublib,unicode))
+$(eval $(call make_sublib_test,unicode))
+endif
+
 # Build
 $(TARGET): $(OBJECTS)
 	rm -f $(TARGET)
@@ -151,7 +156,8 @@ FORMAT_DIRS=\
 	vector \
 	vector-ext \
 	stack \
-	nanorl
+	nanorl \
+	unicode
 
 .PHONY: checkformat
 checkformat:
