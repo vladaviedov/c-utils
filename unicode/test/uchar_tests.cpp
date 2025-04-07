@@ -28,7 +28,13 @@ TEST(Unicode, EncodeImpossible) {
 	EXPECT_EQ(result, nullptr);
 }
 
-TEST(Unicode, EncodeNullString) {
+TEST(Unicode, EncodeNull) {
+	char *result = utf8_encode(nullptr);
+
+	EXPECT_EQ(result, nullptr);
+}
+
+TEST(Unicode, EncodeEmpty) {
 	char *result = utf8_encode(uc_null_str);
 
 	EXPECT_NE(result, nullptr);

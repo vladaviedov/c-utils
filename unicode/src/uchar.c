@@ -38,6 +38,10 @@ uchar *utf8_parse(const char *utf8_str) {
 }
 
 char *utf8_encode(const uchar *ustr) {
+	if (ustr == NULL) {
+		return NULL;
+	}
+
 	// Pre-calculate UTF-8 string size
 	uint64_t utf8_size = calc_utf8_length(ustr);
 	if (utf8_size == 0) {
