@@ -16,7 +16,7 @@
 #define MAX_3BYTE 0x0000ffff
 #define MAX_4BYTE 0x0010ffff
 
-#define CONT_HEAD 0b1000000
+#define CONT_HEAD 0b10000000
 #define CONT_MASK 0b00111111
 #define CONT_BITS 6
 
