@@ -37,7 +37,7 @@ $(TEST_TARGET): test/uchar_tests.cpp
 # Format
 FORMAT_FILES=$(shell find src -type f) \
 			 $(shell find include -type f) \
-			 $(shell find example -type f)
+			 $(shell find test -type f -name '*.cpp')
 
 .PHONY: checkformat
 checkformat:
