@@ -8,6 +8,7 @@
  */
 #include "uchar.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -32,7 +33,7 @@
 static uint64_t calc_utf8_length(const uchar *ustr);
 static uint32_t encode_point(uchar c, char *buffer);
 
-uchar *utf8_parse(const char *utf8_str) {
+uchar *utf8_parse(const char *utf8_str, bool *error_flag) {
 	// TODO: implement
 	return NULL;
 }

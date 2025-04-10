@@ -8,6 +8,7 @@
  */
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef uint32_t uchar;
@@ -16,9 +17,11 @@ typedef uint32_t uchar;
  * @brief Decode a UTF-8 encoded C-string into internal representation.
  *
  * @param[in] utf8_str - UTF-8 encoded string.
+ * @param[out] error_flag - Indicates if errors were encountered and replaced
+ * with the replacement character (can be NULL).
  * @return Unicode string.
  */
-uchar *utf8_parse(const char *utf8_str);
+uchar *utf8_parse(const char *utf8_str, bool *error_flag);
 
 /**
  * @brief Create a UTF-8 encoded C-string from the internal representation.
