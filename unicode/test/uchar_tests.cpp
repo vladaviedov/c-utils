@@ -24,9 +24,14 @@ static const uchar uc_multibyte2[]
 	= { U'こ', U'ん', U'に', U'ち', U'は', U'世', U'界', 0 };
 static const char *utf8_multibyte2 = "こんにちは世界";
 
-static const uchar uc_with_invalid_bytes[]
-	= { U's', U't', U'a', U'r', U't', 0xfffd, 0xfffd, 0xfffd, 0xfffd, 0xfffd,
-		  0xfffd, 0xfffd, 0xfffd, U'e', U'n', U'd', 0 };
+static const uchar uc_with_invalid_bytes[] = { U's', U't', U'a', U'r', U't',
+
+	// Invalid ASCII bytes
+	0xfffd, 0xfffd, 0xfffd, 0xfffd,
+	// Out of range
+	0xfffd, 0xfffd, 0xfffd, 0xfffd,
+
+	U'e', U'n', U'd', 0 };
 static const uint8_t utf8_with_invalid_bytes[] = { 's', 't', 'a', 'r', 't',
 
 	// Invalid ASCII bytes
@@ -37,8 +42,17 @@ static const uint8_t utf8_with_invalid_bytes[] = { 's', 't', 'a', 'r', 't',
 	'e', 'n', 'd', 0 };
 
 static const uchar uc_multibyte_errors[] = { U's', U't', U'a', U'r', U't',
-	0xfffd, 0xfffd, U'c', 0xfffd, 0xfffd, U'c', 0xfffd, 0xfffd, U'c', 0xfffd,
-	0xfffd, 0xfffd, 0xfffd, U'c', U'e', U'n', U'd', 0 };
+
+	// Continuation bit leader
+	0xfffd, 0xfffd, U'c',
+	// Truncated middle char
+	0xfffd, 0xfffd, U'c',
+	// Truncated last char
+	0xfffd, 0xfffd, U'c',
+	// Overlong point
+	0xfffd, 0xfffd, 0xfffd, 0xfffd, U'c',
+
+	U'e', U'n', U'd', 0 };
 static const uint8_t utf8_multibyte_errors[] = { 's', 't', 'a', 'r', 't',
 
 	// Continuation bit leader

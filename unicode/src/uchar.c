@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_1BYTE 0x0000007f
 #define MAX_2BYTE 0x000007ff
@@ -30,12 +31,60 @@
 #define LEAD_4BYTE_HEAD 0b11110000
 #define LEAD_4BYTE_MASK 0b00000111
 
+#define REPLACEMENT_CHAR 0xfffd
+
+#define safe_assign(var_ptr, val)                                              \
+	if (var_ptr != NULL) {                                                     \
+		*var_ptr = val;                                                        \
+	}
+
 static uint64_t calc_utf8_length(const uchar *ustr);
+static uint64_t try_calc_uchar_length(const char *str);
 static uint32_t encode_point(uchar c, char *buffer);
+static uint32_t parse_point(const char *str, uchar *buffer);
 
 uchar *utf8_parse(const char *utf8_str, bool *error_flag) {
-	// TODO: implement
-	return NULL;
+	if (utf8_str == NULL) {
+		safe_assign(error_flag, true);
+		return NULL;
+	}
+
+	// Fallback unicode string size
+	uint64_t fallback_size = strlen(utf8_str) + 1;
+
+	// Pre-calculate unicode string size
+	uint64_t uc_size = try_calc_uchar_length(utf8_str);
+	if (uc_size == 0) {
+		uc_size = fallback_size;
+	}
+	uchar *uc_str = malloc(uc_size * sizeof(uchar));
+
+	// Parse points
+	safe_assign(error_flag, false);
+	uint64_t ptr = 0;
+	bool null_reached = false;
+	do {
+		// If the size calculation was wrong
+		if (ptr >= uc_size) {
+			uc_size = fallback_size;
+			uc_str = realloc(uc_str, fallback_size);
+		}
+
+		null_reached = (*utf8_str == '\0');
+		uint32_t consumed = parse_point(utf8_str, uc_str + ptr);
+		if (consumed == 0) {
+			// Parse error 
+			safe_assign(error_flag, true);
+			uc_str[ptr] = REPLACEMENT_CHAR;
+			utf8_str++;
+		} else {
+			utf8_str += consumed;
+		}
+
+		ptr++;
+	} while (!null_reached);
+
+	return uc_str;
 }
 
 char *utf8_encode(const uchar *ustr) {
@@ -91,6 +140,48 @@ static uint64_t calc_utf8_length(const uchar *ustr) {
 }
 
 /**
+ * @brief Try to calculate the amount of unicode points that the string will
+ * produce. This function is only guaranteed to produce the correct length for
+ * valid UTF-8 strings.
+ *
+ * @param[in] str - UTF-8 string.
+ * @return 0 - Failed due to errors in the string.\n
+ *         n - Amount of unicode points the string *should* occupy.
+ */
+static uint64_t try_calc_uchar_length(const char *str) {
+	uint64_t uc_size = 0;
+
+	uint64_t ptr = 0;
+	uint64_t str_size = strlen(str);
+
+	char c;
+	while ((c = str[ptr]) != '\0') {
+		if ((c & LEAD_4BYTE_HEAD) == LEAD_4BYTE_HEAD) {
+			ptr += 4;
+		} else if ((c & LEAD_3BYTE_HEAD) == LEAD_3BYTE_HEAD) {
+			ptr += 3;
+		} else if ((c & LEAD_2BYTE_HEAD) == LEAD_2BYTE_HEAD) {
+			ptr += 2;
+		} else if ((c & CONT_HEAD) == CONT_HEAD) {
+			// The codepoint cannot start with a continuation bit
+			return 0;
+		} else {
+			ptr += 1;
+		}
+
+		// We have overrun the end of the string
+		if (ptr > str_size) {
+			return 0;
+		}
+
+		uc_size++;
+	}
+
+	// With null-terminator
+	return uc_size + 1;
+}
+
+/**
  * @brief Encode a single unicode point as UTF-8 into a buffer.
  *
  * @param[in] c - Unicode point to encode.
@@ -140,4 +231,69 @@ static uint32_t encode_point(uchar c, char *buffer) {
 	buffer[3] = CONT_HEAD | byte3_data;
 
 	return 4;
+}
+
+/**
+ * @brief Parse a single unicode point from a UTF-8 string.
+ *
+ * @param[in] s - UTF-8 string.
+ * @param[out] buffer - Buffer to write the parsed unicode point.
+ * @return 0 - Invalid UTF-8 sequence. \\
+ *         n - Amount of bytes consumed from 's'.
+ */
+static uint32_t parse_point(const char *str, uchar *buffer) {
+	char leader = str[0];
+
+	uint32_t size;
+	char leader_data;
+
+	// Must start with the longest header
+	if ((leader & LEAD_4BYTE_HEAD) == LEAD_4BYTE_HEAD) {
+		leader_data = leader & LEAD_4BYTE_MASK;
+		size = 4;
+	} else if ((leader & LEAD_3BYTE_HEAD) == LEAD_3BYTE_HEAD) {
+		leader_data = leader & LEAD_3BYTE_MASK;
+		size = 3;
+	} else if ((leader & LEAD_2BYTE_HEAD) == LEAD_2BYTE_HEAD) {
+		leader_data = leader & LEAD_2BYTE_MASK;
+		size = 2;
+	} else if ((leader & CONT_HEAD) == CONT_HEAD) {
+		// The codepoint cannot start with a continuation bit
+		return 0;
+	} else {
+		// ASCII case, just need to check for invalid chars
+		switch ((uint8_t)leader) {
+			case 0xc0: // fallthrough
+			case 0xc1: // fallthrough
+			case 0xf5: // fallthrough
+			case 0xff: // fallthrough
+				return 0;
+			default:
+				*buffer = leader;
+				return 1;
+		}
+	}
+
+	// Write leader data bits
+	*buffer = leader_data << ((size - 1) * CONT_BITS);
+
+	// Parse continuation bits
+	for (uint32_t i = 1; i < size; i++) {
+		char raw = str[i];
+
+		// Check for continuation bit errors
+		if ((raw & CONT_HEAD) != CONT_HEAD) {
+			return 0;
+		}
+
+		char data = raw & CONT_MASK;
+		*buffer |= data << ((size - i - 1) * CONT_BITS);
+	}
+
+	// Check for point being too large
+	if (*buffer > MAX_4BYTE) {
+		return 0;
+	}
+
+	return size;
 }
