@@ -37,7 +37,7 @@ static const uint8_t utf8_with_invalid_bytes[] = { 's', 't', 'a', 'r', 't',
 	// Invalid ASCII bytes
 	0xc0, 0xc1, 0xf5, 0xff,
 	// Out of range
-	0xf0, 0x90, 0x90, 0x90,
+	0xf4, 0x90, 0x90, 0x90,
 
 	'e', 'n', 'd', 0 };
 
@@ -50,7 +50,7 @@ static const uchar uc_multibyte_errors[] = { U's', U't', U'a', U'r', U't',
 	// Truncated last char
 	0xfffd, 0xfffd, U'c',
 	// Overlong point
-	0xfffd, 0xfffd, 0xfffd, 0xfffd, U'c',
+	0xfffd, 0xfffd, U'c',
 
 	U'e', U'n', U'd', 0 };
 static const uint8_t utf8_multibyte_errors[] = { 's', 't', 'a', 'r', 't',
@@ -62,7 +62,7 @@ static const uint8_t utf8_multibyte_errors[] = { 's', 't', 'a', 'r', 't',
 	// Truncated last char
 	0xe9, 0x8a, 'c',
 	// Overlong point
-	0xe5, 0xa9, 0x86, 0x81, 'c',
+	0xc0, 0x80, 'c',
 
 	'e', 'n', 'd', 0 };
 
