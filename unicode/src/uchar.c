@@ -19,17 +19,21 @@
 #define MAX_4BYTE 0x0010ffff
 
 #define CONT_HEAD 0b10000000
-#define CONT_MASK 0b00111111
+#define CONT_HEAD_MASK 0b11000000
+#define CONT_DATA_MASK 0b00111111
 #define CONT_BITS 6
 
 #define LEAD_2BYTE_HEAD 0b11000000
-#define LEAD_2BYTE_MASK 0b00011111
+#define LEAD_2BYTE_HEAD_MASK 0b11100000
+#define LEAD_2BYTE_DATA_MASK 0b00011111
 
 #define LEAD_3BYTE_HEAD 0b11100000
-#define LEAD_3BYTE_MASK 0b00001111
+#define LEAD_3BYTE_HEAD_MASK 0b11110000
+#define LEAD_3BYTE_DATA_MASK 0b00001111
 
 #define LEAD_4BYTE_HEAD 0b11110000
-#define LEAD_4BYTE_MASK 0b00000111
+#define LEAD_4BYTE_HEAD_MASK 0b11111000
+#define LEAD_4BYTE_DATA_MASK 0b00000111
 
 #define REPLACEMENT_CHAR 0xfffd
 
@@ -73,7 +77,7 @@ uchar *utf8_parse(const char *utf8_str, bool *error_flag) {
 		null_reached = (*utf8_str == '\0');
 		uint32_t consumed = parse_point(utf8_str, uc_str + ptr);
 		if (consumed == 0) {
-			// Parse error 
+			// Parse error
 			safe_assign(error_flag, true);
 			uc_str[ptr] = REPLACEMENT_CHAR;
 			utf8_str++;
@@ -156,13 +160,13 @@ static uint64_t try_calc_uchar_length(const char *str) {
 
 	char c;
 	while ((c = str[ptr]) != '\0') {
-		if ((c & LEAD_4BYTE_HEAD) == LEAD_4BYTE_HEAD) {
+		if ((c & LEAD_4BYTE_HEAD_MASK) == LEAD_4BYTE_HEAD) {
 			ptr += 4;
-		} else if ((c & LEAD_3BYTE_HEAD) == LEAD_3BYTE_HEAD) {
+		} else if ((c & LEAD_3BYTE_HEAD_MASK) == LEAD_3BYTE_HEAD) {
 			ptr += 3;
-		} else if ((c & LEAD_2BYTE_HEAD) == LEAD_2BYTE_HEAD) {
+		} else if ((c & LEAD_2BYTE_HEAD_MASK) == LEAD_2BYTE_HEAD) {
 			ptr += 2;
-		} else if ((c & CONT_HEAD) == CONT_HEAD) {
+		} else if ((c & CONT_HEAD_MASK) == CONT_HEAD) {
 			// The codepoint cannot start with a continuation bit
 			return 0;
 		} else {
@@ -198,7 +202,7 @@ static uint32_t encode_point(uchar c, char *buffer) {
 	// 2 bytes
 	if (c <= MAX_2BYTE) {
 		char byte0_data = c >> CONT_BITS;
-		char byte1_data = c & CONT_MASK;
+		char byte1_data = c & CONT_DATA_MASK;
 
 		buffer[0] = LEAD_2BYTE_HEAD | byte0_data;
 		buffer[1] = CONT_HEAD | byte1_data;
@@ -209,8 +213,8 @@ static uint32_t encode_point(uchar c, char *buffer) {
 	// 3 bytes
 	if (c <= MAX_3BYTE) {
 		char byte0_data = c >> (2 * CONT_BITS);
-		char byte1_data = (c >> CONT_BITS) & CONT_MASK;
-		char byte2_data = c & CONT_MASK;
+		char byte1_data = (c >> CONT_BITS) & CONT_DATA_MASK;
+		char byte2_data = c & CONT_DATA_MASK;
 
 		buffer[0] = LEAD_3BYTE_HEAD | byte0_data;
 		buffer[1] = CONT_HEAD | byte1_data;
@@ -221,9 +225,9 @@ static uint32_t encode_point(uchar c, char *buffer) {
 
 	// 4 bytes
 	char byte0_data = c >> (3 * CONT_BITS);
-	char byte1_data = (c >> (2 * CONT_BITS)) & CONT_MASK;
-	char byte2_data = (c >> CONT_BITS) & CONT_MASK;
-	char byte3_data = c & CONT_MASK;
+	char byte1_data = (c >> (2 * CONT_BITS)) & CONT_DATA_MASK;
+	char byte2_data = (c >> CONT_BITS) & CONT_DATA_MASK;
+	char byte3_data = c & CONT_DATA_MASK;
 
 	buffer[0] = LEAD_4BYTE_HEAD | byte0_data;
 	buffer[1] = CONT_HEAD | byte1_data;
@@ -247,31 +251,21 @@ static uint32_t parse_point(const char *str, uchar *buffer) {
 	uint32_t size;
 	char leader_data;
 
-	// Must start with the longest header
-	if ((leader & LEAD_4BYTE_HEAD) == LEAD_4BYTE_HEAD) {
-		leader_data = leader & LEAD_4BYTE_MASK;
+	if ((leader & LEAD_4BYTE_HEAD_MASK) == LEAD_4BYTE_HEAD) {
+		leader_data = leader & LEAD_4BYTE_DATA_MASK;
 		size = 4;
-	} else if ((leader & LEAD_3BYTE_HEAD) == LEAD_3BYTE_HEAD) {
-		leader_data = leader & LEAD_3BYTE_MASK;
+	} else if ((leader & LEAD_3BYTE_HEAD_MASK) == LEAD_3BYTE_HEAD) {
+		leader_data = leader & LEAD_3BYTE_DATA_MASK;
 		size = 3;
-	} else if ((leader & LEAD_2BYTE_HEAD) == LEAD_2BYTE_HEAD) {
-		leader_data = leader & LEAD_2BYTE_MASK;
+	} else if ((leader & LEAD_2BYTE_HEAD_MASK) == LEAD_2BYTE_HEAD) {
+		leader_data = leader & LEAD_2BYTE_DATA_MASK;
 		size = 2;
-	} else if ((leader & CONT_HEAD) == CONT_HEAD) {
-		// The codepoint cannot start with a continuation bit
-		return 0;
+	} else if ((uint8_t)leader <= 0x7f) {
+		// ASCII case
+		*buffer = leader;
+		return 1;
 	} else {
-		// ASCII case, just need to check for invalid chars
-		switch ((uint8_t)leader) {
-			case 0xc0: // fallthrough
-			case 0xc1: // fallthrough
-			case 0xf5: // fallthrough
-			case 0xff: // fallthrough
-				return 0;
-			default:
-				*buffer = leader;
-				return 1;
-		}
+		return 0;
 	}
 
 	// Write leader data bits
@@ -282,12 +276,23 @@ static uint32_t parse_point(const char *str, uchar *buffer) {
 		char raw = str[i];
 
 		// Check for continuation bit errors
-		if ((raw & CONT_HEAD) != CONT_HEAD) {
+		if ((raw & CONT_HEAD_MASK) != CONT_HEAD) {
 			return 0;
 		}
 
-		char data = raw & CONT_MASK;
+		char data = raw & CONT_DATA_MASK;
 		*buffer |= data << ((size - i - 1) * CONT_BITS);
+	}
+
+	// Check for overlong encoding
+	if (size == 2 && *buffer <= MAX_1BYTE) {
+		return 0;
+	}
+	if (size == 3 && *buffer <= MAX_2BYTE) {
+		return 0;
+	}
+	if (size == 4 && *buffer <= MAX_3BYTE) {
+		return 0;
 	}
 
 	// Check for point being too large
