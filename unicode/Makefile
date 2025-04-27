@@ -2,9 +2,12 @@ CFLAGS += -I./include
 OBJECTS=$(OBJ_DIR)/unicode_uchar.o \
 		$(OBJ_DIR)/unicode_ustring.o \
 		$(OBJ_DIR)/unicode_ucwidth.o
+HEADERS=$(BUILD)/include/c-utils/uchar.h \
+		$(BUILD)/include/c-utils/ustring.h \
+		$(BUILD)/include/c-utils/ucwidth.h
 
 .PHONY: all
-all: $(BUILD)/include/c-utils/ucwidth.h $(LIB_TARGET)
+all: $(HEADERS) $(LIB_TARGET)
 
 $(LIB_TARGET): $(OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
@@ -31,7 +34,7 @@ $(BUILD)/include/c-utils/uchar.h: include/uchar.h
 .PHONY: test
 test: $(TEST_TARGET)
 
-$(TEST_TARGET): test/uchar_tests.cpp
+$(TEST_TARGET): test/unicode_tests.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Format

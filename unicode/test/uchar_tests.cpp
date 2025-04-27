@@ -6,6 +6,8 @@ extern "C" {
 #include <cstring>
 #include <gtest/gtest.h>
 
+namespace uchar_tests {
+
 static const uchar uc_empty[] = { 0 };
 static const char *utf8_empty = "";
 
@@ -171,4 +173,6 @@ TEST(Unicode, EncodeMultibyte) {
 	ASSERT_NE(result2, nullptr);
 	EXPECT_STREQ(result2, utf8_multibyte2);
 	free(result2);
+}
+
 }
