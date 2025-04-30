@@ -34,6 +34,10 @@ uchar *ustrncpy(uchar *restrict dst, const uchar *restrict src, size_t dsize) {
 		*trav++ = *src;
 	} while (--dsize != 0 && *src++ != 0);
 
+	while (dsize-- != 0) {
+		*trav++ = 0;
+	}
+
 	return dst;
 }
 

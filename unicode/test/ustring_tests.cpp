@@ -17,6 +17,8 @@ namespace ustring_tests {
 		= { U'h', U'e', U'l', U'l', U'o', 0x1234, 0x5678, 0 };
 	static const uchar terminated_string[]
 		= { U'h', U'e', U'l', U'l', U'o', 0 };
+	static const uchar null_padded_string[]
+		= { U'h', U'e', U'l', U'l', U'o', 0, 0, 0 };
 
 	TEST(Unicode, Ustrlen) {
 		EXPECT_EQ(ustrlen(empty_string), 0);
@@ -50,10 +52,13 @@ namespace ustring_tests {
 	}
 
 	TEST(Unicode, Ustrncpy) {
-		uchar copy_buf[5];
-		ustrncpy(copy_buf, unterminated_string, 5);
+		uchar copy_buf1[5];
+		ustrncpy(copy_buf1, unterminated_string, 5);
+		EXPECT_EQ(memcmp(copy_buf1, unterminated_string, sizeof(uchar) * 5), 0);
 
-		EXPECT_EQ(memcmp(copy_buf, unterminated_string, sizeof(uchar) * 5), 0);
+		uchar copy_buf2[8];
+		ustrncpy(copy_buf2, terminated_string, 8);
+		EXPECT_EQ(memcmp(copy_buf2, null_padded_string, sizeof(null_padded_string)), 0);
 	}
 
 } // namespace ustring_tests
