@@ -46,7 +46,7 @@ uchar *ustrdup(const uchar *s) {
 		return NULL;
 	}
 
-	memcpy(dup_s, s, count);
+	memcpy(dup_s, s, count * sizeof(uchar));
 
 	return dup_s;
 }
@@ -61,7 +61,7 @@ uchar *ustrndup(const uchar *s, size_t n) {
 	}
 
 	// Copy one less and add null-terminator
-	memcpy(dup_s, s, count - 1);
+	memcpy(dup_s, s, (count - 1) * sizeof(uchar));
 	dup_s[count - 1] = 0;
 
 	return dup_s;
