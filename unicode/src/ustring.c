@@ -71,6 +71,66 @@ uchar *ustrndup(const uchar *s, size_t n) {
 	return dup_s;
 }
 
+uchar *ustrcat(uchar *restrict dst, const uchar *restrict src) {
+	uchar *restrict trav = dst;
+
+	// Locate end of 'dst' string
+	while (*trav != 0) {
+		trav++;
+	}
+
+	ustrcpy(trav, src);
+	return dst;
+}
+
+uchar *ustrncat(uchar *restrict dst, const uchar *restrict src, size_t ssize) {
+	uchar *restrict trav = dst;
+
+	// Locate end of 'dst' string
+	while (*trav != 0) {
+		trav++;
+	}
+
+	ustrncpy(trav, src, ssize);
+
+	// Add null-terminator just in case strncpy didn't
+	trav[ssize] = 0;
+
+	return dst;
+}
+
+uchar *ustpcpy(uchar *restrict dst, const uchar *restrict src) {
+	do {
+		*dst++ = *src;
+	} while (*src++ != 0);
+
+	// Back track to null-term byte
+	return dst - 1;
+}
+
+uchar *ustpncpy(uchar *restrict dst, const uchar *restrict src, size_t dsize) {
+	if (dsize == 0) {
+		return dst;
+	}
+
+	do {
+		*dst++ = *src;
+	} while (--dsize != 0 && *src++ != 0);
+
+	// If no null-term, don't need to backtrack
+	if (dsize == 0 && *(dst - 1) != '\0') {
+		return dst;
+	}
+
+	uchar *restrict trav = dst;
+	while (dsize-- != 0) {
+		*trav++ = 0;
+	}
+
+	// Back track to null-term byte
+	return dst - 1;
+}
+
 size_t ustrlen(const uchar *ustr) {
 	size_t count = 0;
 	while (*ustr++ != 0) {
