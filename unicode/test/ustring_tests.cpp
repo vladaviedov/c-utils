@@ -22,8 +22,7 @@ namespace ustring_tests {
 
 	static const uchar concat_part1[]
 		= { U'п', U'р', U'и', U'в', U'е', U'т', U' ', 0 };
-	static const uchar concat_part2[]
-		= { U'м', U'и', U'р', 0 };
+	static const uchar concat_part2[] = { U'м', U'и', U'р', 0 };
 	static const uchar concat_full[]
 		= { U'п', U'р', U'и', U'в', U'е', U'т', U' ', U'м', U'и', U'р', 0 };
 	static const uchar concat_trunc[]
@@ -49,7 +48,8 @@ namespace ustring_tests {
 
 	TEST(Unicode, Ustrndup) {
 		uchar *copy_str = ustrndup(unterminated_string, 5);
-		EXPECT_EQ(memcmp(copy_str, terminated_string, sizeof(terminated_string)), 0);
+		EXPECT_EQ(
+			memcmp(copy_str, terminated_string, sizeof(terminated_string)), 0);
 		free(copy_str);
 	}
 
@@ -108,7 +108,9 @@ namespace ustring_tests {
 
 		uchar copy_buf2[8];
 		uchar *end_ptr2 = ustpncpy(copy_buf2, terminated_string, 8);
-		EXPECT_EQ(memcmp(copy_buf2, null_padded_string, sizeof(null_padded_string)), 0);
+		EXPECT_EQ(
+			memcmp(copy_buf2, null_padded_string, sizeof(null_padded_string)),
+			0);
 		EXPECT_EQ(end_ptr2, copy_buf2 + 5);
 	}
 
@@ -126,7 +128,9 @@ namespace ustring_tests {
 
 		uchar copy_buf2[8];
 		ustrncpy(copy_buf2, terminated_string, 8);
-		EXPECT_EQ(memcmp(copy_buf2, null_padded_string, sizeof(null_padded_string)), 0);
+		EXPECT_EQ(
+			memcmp(copy_buf2, null_padded_string, sizeof(null_padded_string)),
+			0);
 	}
 
 } // namespace ustring_tests
