@@ -99,6 +99,44 @@ uchar *ustrncat(uchar *restrict dst, const uchar *restrict src, size_t ssize) {
 	return dst;
 }
 
+int ustrcmp(const uchar *s1, const uchar *s2) {
+	while (*s1 != '\0' || *s2 != '\0') {
+		if (*s1 == *s2) {
+			s1++;
+			s2++;
+			continue;
+		}
+
+		if (*s1 > *s2) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+int ustrncmp(const uchar *s1, const uchar *s2, size_t ssize) {
+	while ((*s1 != '\0' || *s2 != '\0') && ssize != 0) {
+		if (*s1 == *s2) {
+			s1++;
+			s2++;
+			ssize--;
+
+			continue;
+		}
+
+		if (*s1 > *s2) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 uchar *ustpcpy(uchar *restrict dst, const uchar *restrict src) {
 	do {
 		*dst++ = *src;

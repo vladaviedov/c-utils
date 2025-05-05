@@ -69,6 +69,29 @@ namespace ustring_tests {
 		EXPECT_EQ(memcmp(buffer, concat_trunc, sizeof(concat_trunc)), 0);
 	}
 
+	TEST(Unicode, Ustrcmp) {
+		uchar str1[] = { 2, 2, 3, 0 };
+		uchar str2[] = { 2, 2, 3, 0 };
+		EXPECT_EQ(ustrcmp(str1, str2), 0);
+
+		uchar str3[] = { 3, 2, 2, 0 };
+		uchar str4[] = { 1, 1, 2, 0 };
+		EXPECT_LT(ustrcmp(str1, str3), 0);
+		EXPECT_GT(ustrcmp(str1, str4), 0);
+
+		uchar str5[] = { 1, 0 };
+		EXPECT_GT(ustrcmp(str1, str5), 0);
+	}
+
+	TEST(Unicode, Ustrncmp) {
+		uchar str1[] = { 2, 2, 3, 0 };
+		uchar str2[] = { 2, 2, 3, 0 };
+		EXPECT_EQ(ustrncmp(str1, str2, 3), 0);
+
+		uchar str3[] = { 2, 2, 3, 1, 0 };
+		EXPECT_EQ(ustrncmp(str1, str3, 3), 0);
+	}
+
 	TEST(Unicode, Ustpcpy) {
 		uchar copy_buf[8];
 		uchar *end_ptr = ustpcpy(copy_buf, test_string);

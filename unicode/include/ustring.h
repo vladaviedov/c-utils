@@ -21,7 +21,7 @@ uchar *ustrcat(uchar *restrict dst, const uchar *restrict src);
 uchar *ustrncat(uchar *restrict dst, const uchar *restrict src, size_t ssize);
 int ustrcmp(const uchar *s1, const uchar *s2);
 int ustrcoll(const uchar *s1, const uchar *s2);
-uchar *ustrncmp(const uchar *s1, const uchar *s2, size_t ssize);
+int ustrncmp(const uchar *s1, const uchar *s2, size_t ssize);
 
 size_t ustrxfrm(char *restrict, const char *restrict, size_t);
 
