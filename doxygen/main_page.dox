@@ -12,5 +12,8 @@
  * - @ref vector-ext.h "Vector Extensions"
  * - @ref stack.h "Stack"
  * - @ref nanorl.h "Nanorl"
- * - @ref uchar.h "Unicode"
+ * - Unicode
+ *     - @ref uchar.h "Unicode encoding"
+ *     - @ref ustring.h "Unicode strings library"
+ *     - @ref ucwidth.h "Unicode display length"
  */
