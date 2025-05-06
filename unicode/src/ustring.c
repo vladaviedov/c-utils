@@ -169,18 +169,18 @@ uchar *ustpncpy(uchar *restrict dst, const uchar *restrict src, size_t dsize) {
 	return dst - 1;
 }
 
-size_t ustrlen(const uchar *ustr) {
+size_t ustrlen(const uchar *s) {
 	size_t count = 0;
-	while (*ustr++ != 0) {
+	while (*s++ != 0) {
 		count++;
 	}
 
 	return count;
 }
 
-size_t ustrnlen(const uchar *ustr, size_t maxlen) {
+size_t ustrnlen(const uchar *s, size_t maxlen) {
 	size_t count = 0;
-	while (count < maxlen && *ustr++ != 0) {
+	while (count < maxlen && *s++ != 0) {
 		count++;
 	}
 
