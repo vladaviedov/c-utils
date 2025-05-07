@@ -13,6 +13,9 @@
 
 #include "uchar.h"
 
+static const uchar *end_ptr(const uchar *s);
+static uchar *end_ptr_mut(uchar *s);
+
 uchar *ustrcpy(uchar *restrict dst, const uchar *restrict src) {
 	uchar *restrict trav = dst;
 
@@ -72,25 +75,13 @@ uchar *ustrndup(const uchar *s, size_t n) {
 }
 
 uchar *ustrcat(uchar *restrict dst, const uchar *restrict src) {
-	uchar *restrict trav = dst;
-
-	// Locate end of 'dst' string
-	while (*trav != 0) {
-		trav++;
-	}
-
+	uchar *restrict trav = end_ptr_mut(dst);
 	ustrcpy(trav, src);
 	return dst;
 }
 
 uchar *ustrncat(uchar *restrict dst, const uchar *restrict src, size_t ssize) {
-	uchar *restrict trav = dst;
-
-	// Locate end of 'dst' string
-	while (*trav != 0) {
-		trav++;
-	}
-
+	uchar *restrict trav = end_ptr_mut(dst);
 	ustrncpy(trav, src, ssize);
 
 	// Add null-terminator just in case strncpy didn't
@@ -169,13 +160,10 @@ uchar *ustpncpy(uchar *restrict dst, const uchar *restrict src, size_t dsize) {
 	return dst - 1;
 }
 
-size_t ustrlen(const uchar *s) {
-	size_t count = 0;
-	while (*s++ != 0) {
-		count++;
-	}
 
-	return count;
+
+size_t ustrlen(const uchar *s) {
+	return end_ptr(s) - s;
 }
 
 size_t ustrnlen(const uchar *s, size_t maxlen) {
@@ -185,4 +173,28 @@ size_t ustrnlen(const uchar *s, size_t maxlen) {
 	}
 
 	return count;
+}
+
+/**
+ * @brief Find the null-terminator address of a string.
+ *
+ * @param[in] s - String.
+ * @return Pointer to null-terminator.
+ */
+static const uchar *end_ptr(const uchar *s) {
+	while (*s != 0) {
+		s++;
+	}
+
+	return s;
+}
+
+/**
+ * @brief Find the null-terminator address of a string (mutable).
+ *
+ * @param[in] s - String.
+ * @return Pointer to null-terminator.
+ */
+static uchar *end_ptr_mut(uchar *s) {
+	return (uchar *)end_ptr(s);
 }
