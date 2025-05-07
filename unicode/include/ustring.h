@@ -13,7 +13,7 @@
 #include "uchar.h"
 
 /**
- * @brief Copies the string from 'src' to the buffer 'dst'.
+ * @brief Copy the string from 'src' to the buffer 'dst'.
  *
  * @param[out] dst - Destination buffer.
  * @param[in] src - Original string.
@@ -23,7 +23,7 @@
 uchar *ustrcpy(uchar *restrict dst, const uchar *restrict src);
 
 /**
- * @brief Copies at most 'dsize' points from 'src' to the buffer 'dst', padding
+ * @brief Copy at most 'dsize' points from 'src' to the buffer 'dst', padding
  * 'dst' with zeros if the size of 'src' is smaller than 'dsize'.
  *
  * @param[out] dst - Destination buffer.
@@ -36,7 +36,7 @@ uchar *ustrcpy(uchar *restrict dst, const uchar *restrict src);
 uchar *ustrncpy(uchar *restrict dst, const uchar *restrict src, size_t dsize);
 
 /**
- * @brief Creates a duplicate of 's', allocating memory in the process.
+ * @brief Create a duplicate of 's', allocating memory in the process.
  *
  * @param[in] s - Original string.
  * @return Duplicate string or NULL on error.
@@ -56,7 +56,7 @@ uchar *ustrdup(const uchar *s);
 uchar *ustrndup(const uchar *s, size_t n);
 
 /**
- * @brief Concatenates the string 'src' into 'dst'.
+ * @brief Concatenate the string 'src' into 'dst'.
  *
  * @param[in,out] dst - First string and destination buffer.
  * @param[in] src - Second string.
@@ -65,7 +65,7 @@ uchar *ustrndup(const uchar *s, size_t n);
 uchar *ustrcat(uchar *restrict dst, const uchar *restrict src);
 
 /**
- * @brief Concatenates at most 'ssize' points from 'src' to 'dst',
+ * @brief Concatenate at most 'ssize' points from 'src' to 'dst',
  * adding a null-terminator at the end.
  *
  * @param[in,out] dst - First string and destination buffer.
@@ -77,7 +77,7 @@ uchar *ustrcat(uchar *restrict dst, const uchar *restrict src);
 uchar *ustrncat(uchar *restrict dst, const uchar *restrict src, size_t ssize);
 
 /**
- * @brief Compares the two strings.
+ * @brief Compare two strings.
  *
  * @param[in] s1 - First string.
  * @param[in] s2 - Second string.
@@ -99,12 +99,8 @@ int ustrcmp(const uchar *s1, const uchar *s2);
  */
 int ustrncmp(const uchar *s1, const uchar *s2, size_t ssize);
 
-int ustrcoll(const uchar *s1, const uchar *s2);
-
-size_t ustrxfrm(char *restrict, const char *restrict, size_t);
-
 /**
- * @brief Copies the string from 'src' to the buffer 'dst'.
+ * @brief Copy the string from 'src' to the buffer 'dst'.
  *
  * @param[out] dst - Destination buffer.
  * @param[in] src - Original string.
@@ -114,7 +110,7 @@ size_t ustrxfrm(char *restrict, const char *restrict, size_t);
 uchar *ustpcpy(uchar *restrict dst, const uchar *restrict src);
 
 /**
- * @brief Copies at most 'dsize' points from 'src' to the buffer 'dst', padding
+ * @brief Copy at most 'dsize' points from 'src' to the buffer 'dst', padding
  * with zeros if the size of 'src' is smaller than 'dsize'.
  *
  * @param[out] dst - Destination buffer.
@@ -127,11 +123,8 @@ uchar *ustpcpy(uchar *restrict dst, const uchar *restrict src);
 uchar *ustpncpy(uchar *restrict dst, const uchar *restrict src, size_t dsize);
 
 uchar *ustrchr(const uchar *s, uchar c);
-/* int ustrcoll_l(const uchar *s1, const uchar *s2); */
+
 size_t ustrcspn(const uchar *s, const uchar *reject);
-char *ustrerror(int);
-/* char *ustrerror_l(int, locale_t a); */
-int ustrerror_r(int, char *, size_t);
 
 /**
  * @brief Calculate the length of 's'.
@@ -152,9 +145,23 @@ size_t ustrlen(const uchar *s);
 size_t ustrnlen(const uchar *s, size_t maxlen);
 
 char *ustrpbrk(const char *, const char *);
+
 char *ustrrchr(const char *, int);
-char *ustrsignal(int);
+
 size_t ustrspn(const char *, const char *);
+
 char *ustrstr(const char *, const char *);
+
 char *ustrtok(char *restrict, const char *restrict);
+
 char *ustrtok_r(char *restrict, const char *restrict, char **restrict);
+
+// These functions require the UCA to be implemented to work correctly.
+//
+// int ustrcoll(const uchar *s1, const uchar *s2);
+// size_t ustrxfrm(char *restrict, const char *restrict, size_t);
+// int ustrcoll_l(const uchar *s1, const uchar *s2);
+// char *ustrerror(int);
+// char *ustrerror_l(int, locale_t a);
+// int ustrerror_r(int, char *, size_t);
+// char *ustrsignal(int);
