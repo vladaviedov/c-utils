@@ -170,18 +170,18 @@ size_t ustrnlen(const uchar *s, size_t maxlen);
  */
 uchar *ustrpbrk(const uchar *s, const uchar *accept);
 
-size_t ustrspn(const char *s, const char *accept);
+// TODO: implement in later version
+// These functions require a good string searching algorithm.
+//
+// size_t ustrspn(const char *s, const char *accept);
+// size_t ustrcspn(const uchar *s, const uchar *reject);
+// uchar *ustrstr(const uchar *haystack, const uchar *needle);
+// uchar *ustrtok(uchar *restrict str, const uchar *restrict delim);
+// uchar *ustrtok_r(
+// 	uchar *restrict str, const uchar *restrict delim, uchar **restrict saveptr);
 
-size_t ustrcspn(const uchar *s, const uchar *reject);
-
-uchar *ustrstr(const uchar *haystack, const uchar *needle);
-
-uchar *ustrtok(uchar *restrict str, const uchar *restrict delim);
-
-uchar *ustrtok_r(
-	uchar *restrict str, const uchar *restrict delim, uchar **restrict saveptr);
-
-// These functions require the UCA and locale stuff to be implemented to work
+// TODO: implement in later version
+// These functions require the UCA and/or locale stuff to be implemented to work
 // correctly.
 //
 // int ustrcoll(const uchar *s1, const uchar *s2);
