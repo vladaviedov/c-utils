@@ -122,8 +122,24 @@ uchar *ustpcpy(uchar *restrict dst, const uchar *restrict src);
  */
 uchar *ustpncpy(uchar *restrict dst, const uchar *restrict src, size_t dsize);
 
+/**
+ * @brief Find the first occurrence of a point inside the string.
+ *
+ * @param[in] s - String to search.
+ * @param[in] c - Point to find.
+ * @return NULL - Point not found.\n
+ *         Value - Pointer to the first occurrence inside 's'.
+ */
 uchar *ustrchr(const uchar *s, uchar c);
 
+/**
+ * @brief Find the last occurrence of a point inside the string.
+ *
+ * @param[in] s - String to search.
+ * @param[in] c - Point to find.
+ * @return NULL - Point not found.\n
+ *         Value - Pointer to the last occurrence inside 's'.
+ */
 uchar *ustrrchr(const uchar *s, uchar c);
 
 /**
@@ -144,6 +160,14 @@ size_t ustrlen(const uchar *s);
  */
 size_t ustrnlen(const uchar *s, size_t maxlen);
 
+/**
+ * @brief Find the first occurrence of a value in the set inside a string.
+ *
+ * @param[in] s - String to search.
+ * @param[in] accept - Set of points to search for.
+ * @return NULL - Point not found.\n
+ *         Value - Pointer to the first occurrence inside 's'.
+ */
 uchar *ustrpbrk(const uchar *s, const uchar *accept);
 
 size_t ustrspn(const char *s, const char *accept);

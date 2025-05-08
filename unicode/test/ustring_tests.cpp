@@ -28,16 +28,23 @@ namespace ustring_tests {
 	static const uchar concat_trunc[]
 		= { U'п', U'р', U'и', U'в', U'е', U'т', U' ', U'м', 0 };
 
-	TEST(Unicode, Ustrlen) {
-		EXPECT_EQ(ustrlen(empty_string), 0);
-		EXPECT_EQ(ustrlen(test_string), 7);
+	TEST(Unicode, Ustrcpy) {
+		uchar copy_buf[8];
+		ustrcpy(copy_buf, test_string);
+
+		EXPECT_EQ(memcmp(copy_buf, test_string, sizeof(test_string)), 0);
 	}
 
-	TEST(Unicode, Ustrnlen) {
-		EXPECT_EQ(ustrnlen(empty_string, 5), 0);
-		EXPECT_EQ(ustrnlen(test_string, 5), 5);
-		EXPECT_EQ(ustrnlen(test_string, 10), 7);
-		EXPECT_EQ(ustrnlen(unterminated_string, 5), 5);
+	TEST(Unicode, Ustrncpy) {
+		uchar copy_buf1[5];
+		ustrncpy(copy_buf1, unterminated_string, 5);
+		EXPECT_EQ(memcmp(copy_buf1, unterminated_string, sizeof(uchar) * 5), 0);
+
+		uchar copy_buf2[8];
+		ustrncpy(copy_buf2, terminated_string, 8);
+		EXPECT_EQ(
+			memcmp(copy_buf2, null_padded_string, sizeof(null_padded_string)),
+			0);
 	}
 
 	TEST(Unicode, Ustrdup) {
@@ -114,23 +121,55 @@ namespace ustring_tests {
 		EXPECT_EQ(end_ptr2, copy_buf2 + 5);
 	}
 
-	TEST(Unicode, Ustrcpy) {
-		uchar copy_buf[8];
-		ustrcpy(copy_buf, test_string);
+	TEST(Unicode, Ustrchr) {
+		uchar *found = ustrchr(test_string, U'世');
+		EXPECT_EQ(found, test_string + 5);
 
-		EXPECT_EQ(memcmp(copy_buf, test_string, sizeof(test_string)), 0);
+		uchar *not_found = ustrchr(test_string, U'代');
+		EXPECT_EQ(not_found, nullptr);
+
+		uchar *first = ustrchr(concat_full, U'и');
+		EXPECT_EQ(first, concat_full + 2);
 	}
 
-	TEST(Unicode, Ustrncpy) {
-		uchar copy_buf1[5];
-		ustrncpy(copy_buf1, unterminated_string, 5);
-		EXPECT_EQ(memcmp(copy_buf1, unterminated_string, sizeof(uchar) * 5), 0);
+	TEST(Unicode, Ustrrchr) {
+		uchar *found = ustrrchr(test_string, U'世');
+		EXPECT_EQ(found, test_string + 5);
 
-		uchar copy_buf2[8];
-		ustrncpy(copy_buf2, terminated_string, 8);
-		EXPECT_EQ(
-			memcmp(copy_buf2, null_padded_string, sizeof(null_padded_string)),
-			0);
+		uchar *not_found = ustrrchr(test_string, U'代');
+		EXPECT_EQ(not_found, nullptr);
+
+		uchar *last = ustrrchr(concat_full, U'и');
+		EXPECT_EQ(last, concat_full + 8);
+	}
+
+	TEST(Unicode, Ustrlen) {
+		EXPECT_EQ(ustrlen(empty_string), 0);
+		EXPECT_EQ(ustrlen(test_string), 7);
+	}
+
+	TEST(Unicode, Ustrnlen) {
+		EXPECT_EQ(ustrnlen(empty_string, 5), 0);
+		EXPECT_EQ(ustrnlen(test_string, 5), 5);
+		EXPECT_EQ(ustrnlen(test_string, 10), 7);
+		EXPECT_EQ(ustrnlen(unterminated_string, 5), 5);
+	}
+
+	TEST(Unicode, Ustrpbrk) {
+		uchar accept[] = { U'a', U'b', U'c', 0 };
+
+		uchar str1[] = { U' ', U'a', U'b', U'c', 0 };
+		uchar str2[] = { U' ', U'b', U' ', U'c', 0 };
+		uchar str3[] = { U' ', U' ', U'c', 0 };
+
+		uchar *found;
+
+		found = ustrpbrk(str1, accept);
+		EXPECT_EQ(found, str1 + 1);
+		found = ustrpbrk(str2, accept);
+		EXPECT_EQ(found, str2 + 1);
+		found = ustrpbrk(str3, accept);
+		EXPECT_EQ(found, str3 + 2);
 	}
 
 } // namespace ustring_tests

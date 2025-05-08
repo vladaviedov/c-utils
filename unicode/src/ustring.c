@@ -160,7 +160,29 @@ uchar *ustpncpy(uchar *restrict dst, const uchar *restrict src, size_t dsize) {
 	return dst - 1;
 }
 
+uchar *ustrchr(const uchar *s, uchar c) {
+	do {
+		if (*s == c) {
+			// Cast is needed here
+			return (uchar *)s;
+		}
+	} while (*s++ != 0);
 
+	return NULL;
+}
+
+uchar *ustrrchr(const uchar *s, uchar c) {
+	const uchar *trav = end_ptr(s);
+
+	while (--trav != s) {
+		if (*trav == c) {
+			// Cast is needed here
+			return (uchar *)trav;
+		}
+	}
+
+	return NULL;
+}
 
 size_t ustrlen(const uchar *s) {
 	return end_ptr(s) - s;
@@ -173,6 +195,18 @@ size_t ustrnlen(const uchar *s, size_t maxlen) {
 	}
 
 	return count;
+}
+
+uchar *ustrpbrk(const uchar *s, const uchar *accept) {
+	do {
+		uchar *test = ustrchr(accept, *s);
+		if (test != NULL) {
+			// Cast is needed here
+			return (uchar *)s;
+		}
+	} while (*s++ != 0);
+
+	return NULL;
 }
 
 /**
