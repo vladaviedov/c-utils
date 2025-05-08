@@ -124,7 +124,7 @@ uchar *ustpncpy(uchar *restrict dst, const uchar *restrict src, size_t dsize);
 
 uchar *ustrchr(const uchar *s, uchar c);
 
-size_t ustrcspn(const uchar *s, const uchar *reject);
+uchar *ustrrchr(const uchar *s, uchar c);
 
 /**
  * @brief Calculate the length of 's'.
@@ -144,19 +144,21 @@ size_t ustrlen(const uchar *s);
  */
 size_t ustrnlen(const uchar *s, size_t maxlen);
 
-char *ustrpbrk(const char *, const char *);
+uchar *ustrpbrk(const uchar *s, const uchar *accept);
 
-char *ustrrchr(const char *, int);
+size_t ustrspn(const char *s, const char *accept);
 
-size_t ustrspn(const char *, const char *);
+size_t ustrcspn(const uchar *s, const uchar *reject);
 
-char *ustrstr(const char *, const char *);
+uchar *ustrstr(const uchar *haystack, const uchar *needle);
 
-char *ustrtok(char *restrict, const char *restrict);
+uchar *ustrtok(uchar *restrict str, const uchar *restrict delim);
 
-char *ustrtok_r(char *restrict, const char *restrict, char **restrict);
+uchar *ustrtok_r(
+	uchar *restrict str, const uchar *restrict delim, uchar **restrict saveptr);
 
-// These functions require the UCA to be implemented to work correctly.
+// These functions require the UCA and locale stuff to be implemented to work
+// correctly.
 //
 // int ustrcoll(const uchar *s1, const uchar *s2);
 // size_t ustrxfrm(char *restrict, const char *restrict, size_t);
