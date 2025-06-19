@@ -8,24 +8,92 @@
  */
 #include "ucwidth.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "uchar.h"
 
+// C0 control characters
+#define CTRL_C0_MIN 0x01
+#define CTRL_C0_MAX 0x1f
+// C1 control characters (plus delete)
+#define CTRL_C1_MIN 0x7f
+#define CTRL_C1_MAX 0x9f
+
 typedef struct {
-	uint32_t start;
-	uint32_t end;
+	uchar start;
+	uchar end;
 } unicode_range;
 
+// Table of East Asian full width ranges
 static const unicode_range fullwidth[] = {
-	#include "../gen/fullwidth.gen"
+#include "../gen/fullwidth.gen"
 };
 static const uint64_t fullwidth_len = sizeof(fullwidth) / sizeof(unicode_range);
 
+static bool is_fullwidth(uchar uc);
+
 int ucwidth(uchar uc) {
-	return fullwidth_len;
+	if (uc == 0) {
+		return 0;
+	}
+
+	// Control ranges
+	if ((uc >= CTRL_C0_MIN && uc <= CTRL_C0_MAX)
+		|| (uc >= CTRL_C1_MIN && uc <= CTRL_C1_MAX)) {
+		return -1;
+	}
+
+	// TODO: implement other zero width chars
+	return is_fullwidth(uc) ? 2 : 1;
 }
 
 int ucswidth(const uchar *s, size_t n) {
-	return fullwidth_len;
+	int total_size = 0;
+	uchar uc;
+
+	while ((uc = *s++) != 0 && n-- != 0) {
+		int uc_size = ucwidth(uc);
+		if (uc_size < 0) {
+			return -1;
+		}
+
+		total_size += uc_size;
+	}
+
+	return total_size;
+}
+
+/**
+ * @brief Check if unicode character is East Asian full width.
+ *
+ * @param[in] uc - Unicode character point.
+ * @return True if character is full width.
+ */
+static bool is_fullwidth(uchar uc) {
+	// Table index bounds
+	uint32_t min = 0;
+	uint32_t max = fullwidth_len - 1;
+
+	// Outside bounds must be half-width
+	if (uc < fullwidth[min].start || uc > fullwidth[max].end) {
+		return false;
+	}
+
+	// Perform binary search
+	while (min < max) {
+		uchar mid = (min + max) / 2;
+		const unicode_range *range = &fullwidth[mid];
+
+		if (uc > range->end) {
+			min = mid + 1;
+		} else if (uc < range->start) {
+			max = mid - 1;
+		} else {
+			// Point is within current range
+			return true;
+		}
+	}
+
+	return false;
 }
