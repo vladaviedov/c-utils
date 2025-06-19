@@ -6,11 +6,19 @@ HEADERS=$(BUILD)/include/c-utils/uchar.h \
 		$(BUILD)/include/c-utils/ustring.h \
 		$(BUILD)/include/c-utils/ucwidth.h
 
+UNICODE_DATA=data/EastAsianWidth-16.0.0.txt
+UNICODE_SCRIPT=scripts/east_asian_parser.awk
+UNICODE_GEN=gen/fullwidth.gen
+
 .PHONY: all
 all: $(HEADERS) $(LIB_TARGET)
 
 $(LIB_TARGET): $(OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
+
+$(UNICODE_GEN): $(UNICODE_DATA)
+	mkdir -p gen
+	$(AWK) -f $(UNICODE_SCRIPT) $^ > $@
 
 $(OBJ_DIR)/unicode_uchar.o: src/uchar.c include/uchar.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -18,7 +26,7 @@ $(OBJ_DIR)/unicode_uchar.o: src/uchar.c include/uchar.h
 $(OBJ_DIR)/unicode_ustring.o: src/ustring.c include/ustring.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/unicode_ucwidth.o: src/ucwidth.c include/ucwidth.h
+$(OBJ_DIR)/unicode_ucwidth.o: src/ucwidth.c include/ucwidth.h $(UNICODE_GEN)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/include/c-utils/ustring.h: include/ustring.h

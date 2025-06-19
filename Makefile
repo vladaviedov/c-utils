@@ -7,6 +7,7 @@ CFLAGS_RELEASE=-O2
 CFLAGS_DEBUG=-Wall -Wextra -g
 export AR=ar
 export ARFLAGS=rvcS
+export AWK=awk
 
 CONFIG_PATH=build.conf
 TARGET=$(BUILD)/lib/libutils.a
