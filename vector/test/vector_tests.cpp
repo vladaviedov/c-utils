@@ -386,6 +386,8 @@ TEST(Vector, VecAtBounds) {
 
 	EXPECT_EQ(vec_at(&vec, 3), nullptr);
 	EXPECT_EQ(vec_at(&vec, 2), nullptr);
+
+	free(vec.data);
 }
 
 TEST(Vector, VecAtOk) {
@@ -401,6 +403,8 @@ TEST(Vector, VecAtOk) {
 
 	EXPECT_EQ(*(char *)vec_at(&vec, 0), element0);
 	EXPECT_EQ(*(char *)vec_at(&vec, 1), element1);
+
+	free(vec.data);
 }
 
 TEST(Vector, VecCollectNull) {
