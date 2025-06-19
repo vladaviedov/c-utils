@@ -113,7 +113,7 @@ clean:
 
 # Test
 export CXX=g++
-export CXXFLAGS=-Wall -Wextra -g -std=c++14 -I $(BUILD)/include
+export CXXFLAGS=-Wall -Wextra -g -std=c++17 -I $(BUILD)/include
 TEST_LDFLAGS=-lgtest -lgtest_main -lgcov
 TEST_TARGET=$(BUILD)/test/runtest
 COV_DIR=cov
