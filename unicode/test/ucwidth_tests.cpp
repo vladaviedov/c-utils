@@ -66,7 +66,7 @@ namespace ucwidth_tests {
 	}
 
 	TEST(Unicode, UcswidthLimited) {
-		EXPECT_EQ(ucswidth(sample_str, 16), 16);
+		EXPECT_EQ(ucswidth(sample_str, 7), 14);
 	}
 
 } // namespace ucwidth_tests
