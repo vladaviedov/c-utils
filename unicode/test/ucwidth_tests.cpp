@@ -8,7 +8,7 @@ namespace ucwidth_tests {
 
 	static const uchar single_width_chars[] = { U'k', U'б', U'α', U'ك', U'ｶ' };
 	static const uchar east_asian_chars[] = { U'好', U'い', U'한' };
-	static const uchar zero_width_chars[] = { 0x350, 0xdd3, 0x1d196 };
+	static const uchar zero_width_chars[] = { 0x350, 0xdd3, 0x200b };
 
 	static const uchar empty_str[] = { 0x0 };
 	static const uchar with_control_str[]
