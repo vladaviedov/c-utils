@@ -81,7 +81,7 @@ static bool is_fullwidth(uchar uc) {
 	}
 
 	// Perform binary search
-	while (min < max) {
+	while (min <= max) {
 		uchar mid = (min + max) / 2;
 		const unicode_range *range = &fullwidth[mid];
 
