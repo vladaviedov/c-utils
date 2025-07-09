@@ -6,9 +6,13 @@ HEADERS=$(BUILD)/include/c-utils/uchar.h \
 		$(BUILD)/include/c-utils/ustring.h \
 		$(BUILD)/include/c-utils/ucwidth.h
 
-UNICODE_DATA=data/EastAsianWidth-16.0.0.txt
-UNICODE_SCRIPT=scripts/east_asian_parser.awk
-UNICODE_GEN=gen/fullwidth.gen
+EAST_ASIAN_DATA=data/EastAsianWidth-16.0.0.txt
+EAST_ASIAN_SCRIPT=scripts/east_asian_parser.awk
+EAST_ASIAN_GEN=gen/fullwidth.gen
+
+ZERO_WIDTH_DATA=data/UnicodeData-16.0.0.txt
+ZERO_WIDTH_SCRIPT=scripts/zero_width_parser.awk
+ZERO_WIDTH_GEN=gen/zerowidth.gen
 
 .PHONY: all
 all: $(HEADERS) $(LIB_TARGET)
@@ -16,9 +20,13 @@ all: $(HEADERS) $(LIB_TARGET)
 $(LIB_TARGET): $(OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(UNICODE_GEN): $(UNICODE_DATA)
+$(EAST_ASIAN_GEN): $(EAST_ASIAN_DATA)
 	mkdir -p gen
-	$(AWK) -f $(UNICODE_SCRIPT) $^ > $@
+	$(AWK) -f $(EAST_ASIAN_SCRIPT) $^ > $@
+
+$(ZERO_WIDTH_GEN): $(ZERO_WIDTH_DATA)
+	mkdir -p gen
+	$(AWK) -f $(ZERO_WIDTH_SCRIPT) $^ > $@
 
 $(OBJ_DIR)/unicode_uchar.o: src/uchar.c include/uchar.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -26,7 +34,7 @@ $(OBJ_DIR)/unicode_uchar.o: src/uchar.c include/uchar.h
 $(OBJ_DIR)/unicode_ustring.o: src/ustring.c include/ustring.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/unicode_ucwidth.o: src/ucwidth.c include/ucwidth.h $(UNICODE_GEN)
+$(OBJ_DIR)/unicode_ucwidth.o: src/ucwidth.c include/ucwidth.h $(EAST_ASIAN_GEN) $(ZERO_WIDTH_GEN)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/include/c-utils/ustring.h: include/ustring.h
