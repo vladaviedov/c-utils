@@ -68,17 +68,17 @@ namespace uchar_tests {
 
 		'e', 'n', 'd', 0 };
 
-	TEST(Unicode, ParseNull) {
+	TEST(Unicode, DecodeNull) {
 		bool error;
-		uchar *result = utf8_parse(nullptr, &error);
+		uchar *result = utf8_decode(nullptr, &error);
 
 		EXPECT_EQ(result, nullptr);
 		EXPECT_EQ(error, true);
 	}
 
-	TEST(Unicode, ParseEmpty) {
+	TEST(Unicode, DecodeEmpty) {
 		bool error;
-		uchar *result = utf8_parse(utf8_empty, &error);
+		uchar *result = utf8_decode(utf8_empty, &error);
 
 		ASSERT_NE(result, nullptr);
 		EXPECT_EQ(error, false);
@@ -87,9 +87,9 @@ namespace uchar_tests {
 		free(result);
 	}
 
-	TEST(Unicode, ParseAscii) {
+	TEST(Unicode, DecodeAscii) {
 		bool error;
-		uchar *result = utf8_parse(utf8_ascii, &error);
+		uchar *result = utf8_decode(utf8_ascii, &error);
 
 		ASSERT_NE(result, nullptr);
 		EXPECT_EQ(error, false);
@@ -98,27 +98,27 @@ namespace uchar_tests {
 		free(result);
 	}
 
-	TEST(Unicode, ParseMultibyte) {
+	TEST(Unicode, DecodeMultibyte) {
 		bool error;
 
-		uchar *result1 = utf8_parse(utf8_multibyte1, &error);
+		uchar *result1 = utf8_decode(utf8_multibyte1, &error);
 		ASSERT_NE(result1, nullptr);
 		EXPECT_EQ(error, false);
 		EXPECT_EQ(memcmp(result1, uc_multibyte1, sizeof(uc_multibyte1)), 0);
 		free(result1);
 
-		uchar *result2 = utf8_parse(utf8_multibyte2, &error);
+		uchar *result2 = utf8_decode(utf8_multibyte2, &error);
 		ASSERT_NE(result2, nullptr);
 		EXPECT_EQ(error, false);
 		EXPECT_EQ(memcmp(result2, uc_multibyte2, sizeof(uc_multibyte2)), 0);
 		free(result2);
 	}
 
-	TEST(Unicode, ParseInvalidChars) {
+	TEST(Unicode, DecodeInvalidChars) {
 		bool error;
 
 		uchar *result1
-			= utf8_parse((const char *)utf8_with_invalid_bytes, &error);
+			= utf8_decode((const char *)utf8_with_invalid_bytes, &error);
 		ASSERT_NE(result1, nullptr);
 		EXPECT_EQ(error, true);
 		EXPECT_EQ(memcmp(result1, uc_with_invalid_bytes,
@@ -127,7 +127,7 @@ namespace uchar_tests {
 		free(result1);
 
 		uchar *result2
-			= utf8_parse((const char *)utf8_multibyte_errors, &error);
+			= utf8_decode((const char *)utf8_multibyte_errors, &error);
 		ASSERT_NE(result2, nullptr);
 		EXPECT_EQ(error, true);
 		EXPECT_EQ(
