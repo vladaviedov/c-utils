@@ -51,23 +51,36 @@ static uint64_t calc_utf8_length(const uchar *ustr);
 static uint64_t try_calc_uchar_length(const char *str);
 static uint32_t encode_point(uchar c, char *buffer);
 
-utf8_byte_info utf8_inspect(const char utf8_byte) {
-	if ((uint8_t)utf8_byte <= 0x7f) {
+utf8_byte_info utf8_inspect(char utf8_byte) {
+	uint8_t as_int = (uint8_t)utf8_byte;
+
+	// Check for ASCII first, it's the most common
+	if (as_int <= 0x7f) {
 		return U8BI_ASCII;
-	} else if ((utf8_byte & CONT_HEAD_MASK) == CONT_HEAD) {
-		return U8BI_CONT;
-	} else if ((utf8_byte & LEAD_2BYTE_HEAD_MASK) == LEAD_2BYTE_HEAD) {
-		return U8BI_2BYTES;
-	} else if ((utf8_byte & LEAD_3BYTE_HEAD_MASK) == LEAD_3BYTE_HEAD) {
-		return U8BI_3BYTES;
-	} else if ((utf8_byte & LEAD_4BYTE_HEAD_MASK) == LEAD_4BYTE_HEAD) {
-		return U8BI_4BYTES;
-	} else {
+	}
+
+	// Check for invalid codes
+	if (as_int == 0xc0 || as_int == 0xc1 || as_int >= 0xf5) {
 		return U8BI_INVALID;
+	}
+
+	// Multibyte bytes
+	if ((as_int & CONT_HEAD_MASK) == CONT_HEAD) {
+		return U8BI_CONT;
+	} else if ((as_int & LEAD_2BYTE_HEAD_MASK) == LEAD_2BYTE_HEAD) {
+		return U8BI_2BYTES;
+	} else if ((as_int & LEAD_3BYTE_HEAD_MASK) == LEAD_3BYTE_HEAD) {
+		return U8BI_3BYTES;
+	} else {
+		return U8BI_4BYTES;
 	}
 }
 
 uint32_t utf8_parse_uchar(const char *str, uchar *buffer) {
+	if (str == NULL) {
+		return 0;
+	}
+
 	char leader = str[0];
 
 	uint32_t size;
@@ -103,6 +116,7 @@ uint32_t utf8_parse_uchar(const char *str, uchar *buffer) {
 		char raw = str[i];
 
 		// Check for continuation bit errors
+		// Implicitely checks for zero char
 		if (utf8_inspect(raw) != U8BI_CONT) {
 			return 0;
 		}

@@ -50,7 +50,7 @@ typedef enum {
  * @param[in] utf8_byte - Byte.
  * @return Character type.
  */
-utf8_byte_info utf8_inspect(const char utf8_byte);
+utf8_byte_info utf8_inspect(char utf8_byte);
 
 /**
  * @brief Parse a single unicode point from a UTF-8 string.
