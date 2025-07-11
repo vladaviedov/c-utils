@@ -46,7 +46,6 @@ BEGIN {
 	} else if (n == 2) {
 		print "{ 0x" range[1] ", 0x" range[2] " },"
 	} else {
-		print "Unable to parse file" > /dev/stderr
 		exit
 	}
 }
