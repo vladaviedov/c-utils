@@ -68,6 +68,50 @@ namespace uchar_tests {
 
 		'e', 'n', 'd', 0 };
 
+	TEST(Unicode, InspectInvalid) {
+		EXPECT_EQ(utf8_inspect(0xc0), U8BI_INVALID);
+		EXPECT_EQ(utf8_inspect(0xf9), U8BI_INVALID);
+	}
+
+	TEST(Unicode, InspectNormal) {
+		EXPECT_EQ(utf8_inspect(0xa1), U8BI_CONT);
+		EXPECT_EQ(utf8_inspect('b'), U8BI_ASCII);
+		EXPECT_EQ(utf8_inspect(0xd4), U8BI_2BYTES);
+		EXPECT_EQ(utf8_inspect(0xec), U8BI_3BYTES);
+		EXPECT_EQ(utf8_inspect(0xf2), U8BI_4BYTES);
+	}
+
+	TEST(Unicode, ParseUcharNull) {
+		uchar buf;
+		EXPECT_EQ(utf8_parse_uchar(nullptr, &buf), 0);
+	}
+
+	TEST(Unicode, ParseUcharInvalid) {
+		uchar buf;
+
+		uint8_t bad_char[] = { 0xc0, 0x0 };
+		EXPECT_EQ(utf8_parse_uchar((char *)bad_char, &buf), 0);
+
+		uint8_t cut_char[] = { 0xc3, 0x22, 0x0 };
+		EXPECT_EQ(utf8_parse_uchar((char *)cut_char, &buf), 0);
+	}
+
+	TEST(Unicode, ParseUcharRandom) {
+		uchar res;
+
+		EXPECT_EQ(utf8_parse_uchar("x", &res), 1);
+		EXPECT_EQ(res, U'x');
+
+		EXPECT_EQ(utf8_parse_uchar("Ω", &res), 2);
+		EXPECT_EQ(res, U'Ω');
+
+		EXPECT_EQ(utf8_parse_uchar("茶", &res), 3);
+		EXPECT_EQ(res, U'茶');
+
+		EXPECT_EQ(utf8_parse_uchar("𓆏", &res), 4);
+		EXPECT_EQ(res, U'𓆏');
+	}
+
 	TEST(Unicode, DecodeNull) {
 		bool error;
 		uchar *result = utf8_decode(nullptr, &error);
