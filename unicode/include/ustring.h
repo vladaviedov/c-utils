@@ -4,7 +4,7 @@
  * @version dev
  * @date 2025
  * @license LGPLv3.0
- * @brief string.h equivalent for unicode point strings.
+ * @brief Unicode string library.
  */
 #pragma once
 

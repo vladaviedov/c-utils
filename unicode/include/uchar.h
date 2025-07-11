@@ -4,7 +4,7 @@
  * @version dev
  * @date 2025
  * @license LGPLv3.0
- * @brief Unicode character type and UTF-8 conversion.
+ * @brief Unicode base and encodings.
  */
 #pragma once
 
@@ -13,6 +13,28 @@
 
 typedef uint32_t uchar;
 
+/**
+ * @enum utf8_byte_info
+ * Byte type inside a UTF-8 string.
+ *
+ * @var utf8_byte_info::U8BI_INVALID
+ * Invalid byte in UTF-8.
+ *
+ * @var utf8_byte_info::U8BI_CONT
+ * Continunation byte of a multibyte unicode point.
+ *
+ * @var utf8_byte_info::U8BI_ASCII
+ * Single byte ASCII-equivalent character.
+ *
+ * @var utf8_byte_info::U8BI_2BYTES
+ * Leading byte of a 2-byte unicode point.
+ *
+ * @var utf8_byte_info::U8BI_3BYTES
+ * Leading byte of a 3-byte unicode point.
+ *
+ * @var utf8_byte_info::U8BI_4BYTES
+ * Leading byte of a 4-byte unicode point.
+ */
 typedef enum {
 	U8BI_INVALID = -1,
 	U8BI_CONT,
@@ -33,7 +55,7 @@ utf8_byte_info utf8_inspect(const char utf8_byte);
 /**
  * @brief Parse a single unicode point from a UTF-8 string.
  *
- * @param[in] s - UTF-8 string.
+ * @param[in] str - UTF-8 string.
  * @param[out] buffer - Buffer to write the parsed unicode point.
  * @return 0 - Invalid UTF-8 sequence. \\
  *         n - Amount of bytes consumed from 's'.

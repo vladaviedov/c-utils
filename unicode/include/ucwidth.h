@@ -4,7 +4,7 @@
  * @version dev
  * @date 2025
  * @license LGPLv3.0
- * @brief Unicode character width.
+ * @brief Unicode glyph width.
  */
 #pragma once
 

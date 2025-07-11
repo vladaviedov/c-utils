@@ -13,16 +13,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+// UTF-8 limits
 #define MAX_1BYTE 0x0000007f
 #define MAX_2BYTE 0x000007ff
 #define MAX_3BYTE 0x0000ffff
 #define MAX_4BYTE 0x0010ffff
 
+// Continuation byte description
 #define CONT_HEAD 0b10000000
 #define CONT_HEAD_MASK 0b11000000
 #define CONT_DATA_MASK 0b00111111
 #define CONT_BITS 6
 
+// Leading byte description
 #define LEAD_2BYTE_HEAD 0b11000000
 #define LEAD_2BYTE_HEAD_MASK 0b11100000
 #define LEAD_2BYTE_DATA_MASK 0b00011111
@@ -35,6 +38,8 @@
 #define LEAD_4BYTE_HEAD_MASK 0b11111000
 #define LEAD_4BYTE_DATA_MASK 0b00000111
 
+// Error replacement character
+// Encouraged for use instead of crashing the parser
 #define REPLACEMENT_CHAR 0xfffd
 
 #define safe_assign(var_ptr, val)                                              \

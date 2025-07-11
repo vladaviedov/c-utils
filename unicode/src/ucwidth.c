@@ -16,10 +16,21 @@
 // C0 control characters
 #define CTRL_C0_MIN 0x01
 #define CTRL_C0_MAX 0x1f
+
 // C1 control characters (plus delete)
 #define CTRL_C1_MIN 0x7f
 #define CTRL_C1_MAX 0x9f
 
+/**
+ * @struct unicode_range
+ * Unicode point range.
+ *
+ * @var unicode_range::start
+ * Range start value.
+ *
+ * @var unicode_range::end
+ * Range end value.
+ */
 typedef struct {
 	uchar start;
 	uchar end;
