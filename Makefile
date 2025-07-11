@@ -7,6 +7,7 @@ CFLAGS_RELEASE=-O2
 CFLAGS_DEBUG=-Wall -Wextra -g
 export AR=ar
 export ARFLAGS=rvcS
+export AWK=awk
 
 CONFIG_PATH=build.conf
 TARGET=$(BUILD)/lib/libutils.a
@@ -102,6 +103,11 @@ $(eval $(call make_sublib,nanorl))
 $(eval $(call make_sublib_example,nanorl))
 endif
 
+ifeq ($(unicode),1)
+$(eval $(call make_sublib,unicode))
+$(eval $(call make_sublib_test,unicode))
+endif
+
 # Build
 $(TARGET): $(OBJECTS)
 	rm -f $(TARGET)
@@ -151,7 +157,8 @@ FORMAT_DIRS=\
 	vector \
 	vector-ext \
 	stack \
-	nanorl
+	nanorl \
+	unicode
 
 .PHONY: checkformat
 checkformat:
