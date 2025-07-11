@@ -57,7 +57,7 @@ utf8_byte_info utf8_inspect(char utf8_byte);
  *
  * @param[in] str - UTF-8 string.
  * @param[out] buffer - Buffer to write the parsed unicode point.
- * @return 0 - Invalid UTF-8 sequence. \\
+ * @return 0 - Invalid UTF-8 sequence.\n
  *         n - Amount of bytes consumed from 's'.
  */
 uint32_t utf8_parse_uchar(const char *str, uchar *buffer);

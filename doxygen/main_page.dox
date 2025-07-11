@@ -13,7 +13,7 @@
  * - @ref stack.h "Stack"
  * - @ref nanorl.h "Nanorl"
  * - Unicode
- *     - @ref uchar.h "Unicode encoding"
+ *     - @ref uchar.h "Unicode base"
  *     - @ref ustring.h "Unicode strings library"
- *     - @ref ucwidth.h "Unicode display length"
+ *     - @ref ucwidth.h "Unicode glyph width"
  */

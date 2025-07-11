@@ -214,7 +214,7 @@ char *utf8_encode(const uchar *ustr) {
  * a UTF-8 string.
  *
  * @param[in] ustr - Unicode string.
- * @return 0 - Impossible to encode as UTF-8. \\
+ * @return 0 - Impossible to encode as UTF-8.\n
  *         n - Size required including the null-terminator.
  */
 static uint64_t calc_utf8_length(const uchar *ustr) {
