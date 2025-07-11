@@ -4,7 +4,7 @@ Collection of utility libraries for the C programming language.
 
 ## Dependencies
 
-- Build: C tool chain, GNU Make
+- Build: C tool chain, GNU Make, AWK
 - Testing: `gtest`, C++ tool chain
 - Coverage: `lcov`
 - Documentation: `doxygen`
