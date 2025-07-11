@@ -1,7 +1,7 @@
 /**
  * @file ucwidth.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version dev
+ * @version 1.0
  * @date 2025
  * @license LGPLv3.0
  * @brief Unicode glyph width.

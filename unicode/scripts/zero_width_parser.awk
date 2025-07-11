@@ -2,7 +2,7 @@
 ##
 ## @file zero_width_parser.awk
 ## @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
-## @version dev
+## @version 1.0
 ## @date 2025
 ## @license LGPLv3.0
 ## @brief Generate table of zero width chars from the Unicode Character Database.

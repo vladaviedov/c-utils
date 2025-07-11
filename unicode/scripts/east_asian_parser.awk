@@ -2,7 +2,7 @@
 ##
 ## @file east_asian_parser.awk
 ## @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
-## @version dev
+## @version 1.0
 ## @date 2025
 ## @license LGPLv3.0
 ## @brief Generate table from the EastAsianWidth Unicode data file.
